@@ -746,8 +746,8 @@
         ctx.fillText(Math.round(value / 10000).toLocaleString("ja-JP") + "万", pad.left - 6, y);
       }
 
-      const gap = Math.min(16, Math.max(4, width / rows.length * 0.24));
-      const barWidth = Math.max(13, (width - gap * (rows.length - 1)) / rows.length);
+      const gap = Math.min(12, Math.max(2, width / rows.length * 0.18));
+      const barWidth = Math.max(5, (width - gap * (rows.length - 1)) / rows.length);
       const colors = ["#bdcff9", "#3975c5", "#073f98"];
 
       rows.forEach((r, index) => {
