@@ -1,0 +1,1000 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>資産形成シミュレーター</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #657085;
+      --line: #dfe5ef;
+      --soft: #f5f8fb;
+      --panel: #ffffff;
+      --blue: #2176d2;
+      --cyan: #16a6b7;
+      --green: #32a852;
+      --orange: #ef8b2c;
+      --red: #d95c5c;
+      --principal: #bdcff9;
+      --contrib: #3975c5;
+      --interest: #073f98;
+      --shadow: 0 10px 30px rgba(30, 45, 70, .08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background: #eef4f8;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans JP", sans-serif;
+      line-height: 1.6;
+    }
+
+    button, input, select { font: inherit; }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 360px minmax(0, 1fr);
+    }
+
+    .sidebar {
+      background: var(--panel);
+      border-right: 1px solid var(--line);
+      padding: 24px;
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+
+    .mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      color: #fff;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.3;
+      letter-spacing: 0;
+    }
+
+    .subhead {
+      margin: 3px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 4px;
+      margin-bottom: 22px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+    }
+
+    .mode-tabs button {
+      min-height: 38px;
+      border: 0;
+      border-radius: 6px;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .mode-tabs button.active {
+      color: var(--ink);
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(20, 40, 70, .08);
+      font-weight: 700;
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .field label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .input-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 8px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+    }
+
+    .input-wrap input {
+      width: 100%;
+      height: 44px;
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      background: transparent;
+      text-align: right;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .unit {
+      color: var(--muted);
+      white-space: nowrap;
+      font-size: 13px;
+    }
+
+    .switch-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .switch-row strong {
+      display: block;
+      font-size: 13px;
+    }
+
+    .switch-row span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 48px;
+      height: 28px;
+      flex: 0 0 auto;
+    }
+
+    .toggle input {
+      position: absolute;
+      opacity: 0;
+    }
+
+    .toggle i {
+      position: absolute;
+      inset: 0;
+      border-radius: 999px;
+      background: #c6d1df;
+      cursor: pointer;
+      transition: .2s;
+    }
+
+    .toggle i::after {
+      content: "";
+      position: absolute;
+      top: 4px;
+      left: 4px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 1px 4px rgba(0,0,0,.2);
+      transition: .2s;
+    }
+
+    .toggle input:checked + i { background: var(--blue); }
+    .toggle input:checked + i::after { transform: translateX(20px); }
+
+    .content {
+      min-width: 0;
+      padding: 28px;
+      overflow: auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .topbar p {
+      margin: 5px 0 0;
+      color: var(--muted);
+      max-width: 720px;
+      font-size: 14px;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .icon-button {
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fff;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(30,45,70,.05);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(320px, .72fr) minmax(420px, 1.28fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .result-panel {
+      padding: 22px;
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .main-value {
+      margin: 6px 0 14px;
+      font-size: clamp(32px, 3.2vw, 42px);
+      line-height: 1.1;
+      font-weight: 800;
+      letter-spacing: 0;
+      color: var(--blue);
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .metric {
+      min-width: 0;
+      padding: 12px;
+      border-radius: 8px;
+      background: var(--soft);
+    }
+
+    .metric b {
+      display: block;
+      margin-top: 3px;
+      font-size: 17px;
+      font-variant-numeric: tabular-nums;
+      overflow-wrap: anywhere;
+    }
+
+    .chart-panel {
+      padding: 18px 18px 10px;
+      min-height: 390px;
+    }
+
+    .chart-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .chart-head h3,
+    .breakdown h3,
+    .table-panel h3 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend i {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+      background: var(--blue);
+    }
+
+    .legend span:nth-child(1) i { background: var(--principal); }
+    .legend span:nth-child(2) i { background: var(--contrib); }
+    .legend span:nth-child(3) i { background: var(--interest); }
+    .legend span:nth-child(4) i {
+      width: 16px;
+      height: 2px;
+      border-radius: 0;
+      background: var(--red);
+    }
+
+    canvas {
+      width: 100%;
+      height: 310px;
+      display: block;
+    }
+
+    .chart-wrap {
+      position: relative;
+    }
+
+    .chart-tooltip {
+      position: absolute;
+      min-width: 176px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #fff;
+      background: rgba(23, 32, 51, .92);
+      box-shadow: 0 8px 22px rgba(20, 30, 45, .18);
+      font-size: 12px;
+      pointer-events: none;
+      opacity: 0;
+      transform: translate(-50%, -112%);
+      transition: opacity .12s ease;
+    }
+
+    .chart-tooltip strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 13px;
+    }
+
+    .chart-tooltip span {
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 6px;
+      align-items: center;
+      white-space: nowrap;
+    }
+
+    .chart-tooltip i {
+      width: 10px;
+      height: 10px;
+      border-radius: 2px;
+      display: inline-block;
+      background: var(--principal);
+    }
+
+    .chart-tooltip span:nth-child(3) i { background: var(--contrib); }
+    .chart-tooltip span:nth-child(4) i { background: var(--interest); }
+    .chart-tooltip span:nth-child(5) i { background: var(--red); }
+
+    .below-grid {
+      display: grid;
+      grid-template-columns: minmax(360px, .95fr) minmax(0, 1.05fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .breakdown {
+      padding: 18px;
+    }
+
+    .pie-layout {
+      display: grid;
+      grid-template-columns: minmax(160px, .95fr) minmax(180px, 1fr);
+      gap: 18px;
+      align-items: center;
+      margin-top: 10px;
+    }
+
+    #pieChart {
+      width: 100%;
+      height: 230px;
+    }
+
+    .detail-list {
+      display: grid;
+      gap: 12px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .detail-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 9px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .detail-list li::before {
+      content: "";
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      flex: 0 0 auto;
+      background: var(--principal);
+    }
+
+    .detail-list li:nth-child(2)::before { background: var(--contrib); }
+    .detail-list li:nth-child(3)::before { background: var(--interest); }
+    .detail-list li:nth-child(4)::before { background: var(--line); }
+
+    .detail-list span {
+      margin-right: auto;
+    }
+
+    .detail-list b {
+      color: var(--ink);
+      font-size: 15px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .table-panel {
+      padding: 18px;
+      overflow: hidden;
+    }
+
+    .table-scroll {
+      overflow: auto;
+      margin-top: 12px;
+      max-height: 310px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 640px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th, td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--line);
+      text-align: right;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums;
+    }
+
+    th:first-child,
+    td:first-child { text-align: left; }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      color: var(--muted);
+      background: #fff;
+      font-size: 12px;
+    }
+
+    .note {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .goal-only { display: none; }
+    body.goal-mode .goal-only { display: grid; }
+    body.goal-mode .normal-only { display: none; }
+
+    @media (max-width: 980px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .content { padding: 18px; }
+      .hero-grid,
+      .below-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 620px) {
+      .topbar { display: block; }
+      .actions { justify-content: flex-start; margin-top: 14px; }
+      .summary-grid { grid-template-columns: 1fr; }
+      .main-value { font-size: 36px; }
+      .sidebar,
+      .content { padding: 16px; }
+      .pie-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="mark">¥</div>
+        <div>
+          <h1>資産形成シミュレーター</h1>
+          <p class="subhead">積立・逆算・内訳を1画面で確認</p>
+        </div>
+      </div>
+
+      <div class="mode-tabs" aria-label="計算モード">
+        <button class="active" type="button" data-mode="normal">積立から計算</button>
+        <button type="button" data-mode="goal">目標から逆算</button>
+      </div>
+
+      <div class="field normal-only">
+        <label for="initial">資産運用の元本 <span class="hint">現在の投資額</span></label>
+        <div class="input-wrap"><input id="initial" type="number" min="0" step="10" value="100"><span class="unit">万円</span></div>
+      </div>
+
+      <div class="field normal-only">
+        <label for="monthly">毎月の積立金額 <span class="hint">無理なく続く額</span></label>
+        <div class="input-wrap"><input id="monthly" type="number" min="0" step="1" value="5"><span class="unit">万円</span></div>
+      </div>
+
+      <div class="field goal-only">
+        <label for="goal">目標金額 <span class="hint">将来ほしい資産</span></label>
+        <div class="input-wrap"><input id="goal" type="number" min="0" step="100" value="3000"><span class="unit">万円</span></div>
+      </div>
+
+      <div class="field">
+        <label for="years">運用期間 <span class="hint">1年から40年</span></label>
+        <div class="input-wrap"><input id="years" type="number" min="1" max="40" step="1" value="20"><span class="unit">年</span></div>
+      </div>
+
+      <div class="field">
+        <label for="rate">想定利回り <span class="hint">標準シナリオ</span></label>
+        <div class="input-wrap"><input id="rate" type="number" min="-20" max="20" step="0.1" value="5"><span class="unit">%</span></div>
+      </div>
+
+      <div class="field">
+        <label for="rateError">利回りの誤差 <span class="hint">エラーバー幅</span></label>
+        <div class="input-wrap"><input id="rateError" type="number" min="0" max="10" step="0.1" value="1"><span class="unit">%</span></div>
+      </div>
+
+      <div class="switch-row">
+        <div><strong>税金を考慮</strong><span>運用益に20.315%を反映</span></div>
+        <label class="toggle"><input id="tax" type="checkbox" checked><i></i></label>
+      </div>
+
+      <div class="switch-row">
+        <div><strong>手数料を考慮</strong><span>年0.2%を利回りから控除</span></div>
+        <label class="toggle"><input id="fee" type="checkbox" checked><i></i></label>
+      </div>
+
+      <p class="note">本ツールは概算シミュレーションです。投資判断、税務判断、将来の運用成果を保証するものではありません。</p>
+    </aside>
+
+    <section class="content">
+      <div class="topbar">
+        <div>
+          <h2 id="headline">20年後の運用結果</h2>
+          <p id="lead">基本の積立シミュレーションに、比較シナリオと税金・手数料の現実味を足した画面イメージです。</p>
+        </div>
+        <div class="actions" aria-label="アクション">
+          <button class="icon-button" title="共有" type="button">↗</button>
+          <button class="icon-button" title="CSV出力" type="button">↓</button>
+          <button class="icon-button" title="保存" type="button">☆</button>
+        </div>
+      </div>
+
+      <div class="hero-grid">
+        <div class="panel result-panel">
+          <div class="label" id="mainLabel">運用の結果</div>
+          <div class="main-value" id="mainValue">¥0</div>
+          <div class="summary-grid">
+            <div class="metric"><span class="label">元本</span><b id="initialValue">¥0</b></div>
+            <div class="metric"><span class="label">積立額合計</span><b id="contribValue">¥0</b></div>
+            <div class="metric"><span class="label">利息合計</span><b id="interestValue">¥0</b></div>
+          </div>
+        </div>
+
+        <div class="panel chart-panel">
+          <div class="chart-head">
+            <h3>毎年の積立金額推移</h3>
+            <div class="legend"><span><i></i>元本</span><span><i></i>積立額合計</span><span><i></i>利息合計</span><span><i></i>利回り誤差</span></div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="lineChart" width="760" height="420" aria-label="毎年の積立金額推移グラフ"></canvas>
+            <div class="chart-tooltip" id="chartTooltip" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="below-grid">
+        <div class="panel breakdown">
+          <h3>最終的な積立金の内訳</h3>
+          <div class="pie-layout">
+            <canvas id="pieChart" width="420" height="300" aria-label="最終的な積立金の内訳円グラフ"></canvas>
+            <ul class="detail-list">
+              <li><span>元本</span><b id="detailInitial">¥0</b></li>
+              <li><span>積立額合計</span><b id="detailContrib">¥0</b></li>
+              <li><span>利息合計</span><b id="detailInterest">¥0</b></li>
+              <li><span>税・手数料</span><b id="detailAdjust">ON</b></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="panel table-panel">
+          <h3>年ごとの推移</h3>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr><th>年</th><th>元本</th><th>積立額合計</th><th>利息合計</th><th>運用結果</th></tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
+    const inputs = {
+      initial: document.querySelector("#initial"),
+      monthly: document.querySelector("#monthly"),
+      years: document.querySelector("#years"),
+      rate: document.querySelector("#rate"),
+      rateError: document.querySelector("#rateError"),
+      goal: document.querySelector("#goal"),
+      tax: document.querySelector("#tax"),
+      fee: document.querySelector("#fee")
+    };
+    const chart = document.querySelector("#lineChart");
+    const ctx = chart.getContext("2d");
+    const pieChart = document.querySelector("#pieChart");
+    const pieCtx = pieChart.getContext("2d");
+    const tooltip = document.querySelector("#chartTooltip");
+    let barHitAreas = [];
+    let mode = "normal";
+
+    function clampNumber(value, fallback) {
+      const n = Number(value);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
+    function monthlyNeeded(goal, years, annualRate) {
+      const months = years * 12;
+      const monthlyRate = annualRate / 100 / 12;
+      if (months <= 0) return 0;
+      if (Math.abs(monthlyRate) < 0.000001) return goal / months;
+      return goal * monthlyRate / (Math.pow(1 + monthlyRate, months) - 1);
+    }
+
+    function niceStep(roughStep) {
+      if (!Number.isFinite(roughStep) || roughStep <= 0) return 1000000;
+      const magnitude = Math.pow(10, Math.floor(Math.log10(roughStep)));
+      const normalized = roughStep / magnitude;
+      const nice = normalized <= 1 ? 1
+        : normalized <= 2 ? 2
+        : normalized <= 2.5 ? 2.5
+        : normalized <= 5 ? 5
+        : 10;
+      return nice * magnitude;
+    }
+
+    function simulate({ initial, monthly, years, annualRate, tax, fee }) {
+      const feeAdjustedRate = annualRate - (fee ? 0.2 : 0);
+      const monthlyRate = feeAdjustedRate / 100 / 12;
+      const rows = [];
+      let balance = initial;
+      let totalContrib = 0;
+      let totalInterestBeforeTax = 0;
+
+      for (let year = 1; year <= years; year++) {
+        const start = balance;
+        let yearlyContrib = 0;
+        for (let month = 0; month < 12; month++) {
+          balance += monthly;
+          yearlyContrib += monthly;
+          const before = balance;
+          balance *= 1 + monthlyRate;
+          totalInterestBeforeTax += balance - before;
+        }
+        totalContrib += yearlyContrib;
+        let taxAmount = 0;
+        if (tax && balance > initial + totalContrib) {
+          const taxableGain = Math.max(0, balance - initial - totalContrib);
+          const previousGain = Math.max(0, start - initial - (totalContrib - yearlyContrib));
+          taxAmount = Math.max(0, taxableGain - previousGain) * 0.20315;
+          balance -= taxAmount;
+        }
+        rows.push({
+          year,
+          initial,
+          contribution: totalContrib,
+          interest: Math.max(0, balance - initial - totalContrib),
+          balance
+        });
+      }
+
+      return rows;
+    }
+
+    function drawStackedBarChart(rows, goalValue, lowerRows, upperRows) {
+      const dpr = window.devicePixelRatio || 1;
+      const cssWidth = chart.clientWidth;
+      const cssHeight = chart.clientHeight;
+      chart.width = Math.floor(cssWidth * dpr);
+      chart.height = Math.floor(cssHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
+      barHitAreas = [];
+
+      const pad = { top: 22, right: 18, bottom: 38, left: 72 };
+      const width = cssWidth - pad.left - pad.right;
+      const height = cssHeight - pad.top - pad.bottom;
+      const rangeValues = [...(lowerRows || []), ...(upperRows || [])].map(r => r.balance);
+      const allValues = rows.map(r => r.balance).concat(rangeValues, goalValue ? [goalValue] : []);
+      const maxValue = Math.max(1000000, ...allValues);
+      const tickCount = 5;
+      const tickStep = niceStep(maxValue / tickCount);
+      const max = Math.ceil(maxValue / tickStep) * tickStep;
+      const years = Math.max(...rows.map(r => r.year));
+
+      ctx.strokeStyle = "#dfe5ef";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#657085";
+      ctx.font = "12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+
+      for (let i = 0; i <= tickCount; i++) {
+        const y = pad.top + height - (height * i / tickCount);
+        const value = tickStep * i;
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + width, y);
+        ctx.stroke();
+        ctx.fillText(Math.round(value / 10000).toLocaleString("ja-JP") + "万円", pad.left - 9, y);
+      }
+
+      const gap = Math.min(16, Math.max(4, width / rows.length * 0.24));
+      const barWidth = Math.max(9, (width - gap * (rows.length - 1)) / rows.length);
+      const colors = ["#bdcff9", "#3975c5", "#073f98"];
+
+      rows.forEach((r, index) => {
+        const x = pad.left + index * (barWidth + gap);
+        let yBase = pad.top + height;
+        const values = [r.initial, r.contribution, r.interest];
+        values.forEach((value, partIndex) => {
+          const segmentHeight = Math.max(0, value / max * height);
+          const y = yBase - segmentHeight;
+          ctx.fillStyle = colors[partIndex];
+          ctx.fillRect(x, y, barWidth, segmentHeight);
+          yBase = y;
+        });
+        const lower = lowerRows ? lowerRows[index] : null;
+        const upper = upperRows ? upperRows[index] : null;
+        barHitAreas.push({ x, y: yBase, width: barWidth, height: pad.top + height - yBase, row: r, lower, upper });
+      });
+
+      if (lowerRows && upperRows) {
+        ctx.strokeStyle = "#d95c5c";
+        ctx.lineWidth = 2;
+        rows.forEach((r, index) => {
+          const lower = lowerRows[index];
+          const upper = upperRows[index];
+          if (!lower || !upper || Math.abs(upper.balance - lower.balance) < 1) return;
+          const x = pad.left + index * (barWidth + gap) + barWidth / 2;
+          const yLow = pad.top + height - (lower.balance / max) * height;
+          const yHigh = pad.top + height - (upper.balance / max) * height;
+          const cap = Math.min(18, Math.max(8, barWidth * .7));
+          ctx.beginPath();
+          ctx.moveTo(x, yHigh);
+          ctx.lineTo(x, yLow);
+          ctx.moveTo(x - cap / 2, yHigh);
+          ctx.lineTo(x + cap / 2, yHigh);
+          ctx.moveTo(x - cap / 2, yLow);
+          ctx.lineTo(x + cap / 2, yLow);
+          ctx.stroke();
+        });
+      }
+
+      if (goalValue) {
+        const y = pad.top + height - (goalValue / max) * height;
+        ctx.setLineDash([6, 6]);
+        ctx.strokeStyle = "#d95c5c";
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + width, y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+        ctx.fillStyle = "#d95c5c";
+        ctx.textAlign = "left";
+        ctx.fillText("目標", pad.left + width - 34, y - 11);
+      }
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#657085";
+      const labelYears = years <= 12
+        ? rows.map(r => r.year)
+        : Array.from(new Set([1, Math.ceil(years / 2), years]));
+      labelYears.forEach(year => {
+        const index = year - 1;
+        const x = pad.left + index * (barWidth + gap) + barWidth / 2;
+        ctx.fillText(year + "年目", x, pad.top + height + 24);
+      });
+    }
+
+    function drawPieChart(parts) {
+      const dpr = window.devicePixelRatio || 1;
+      const cssWidth = pieChart.clientWidth;
+      const cssHeight = pieChart.clientHeight;
+      pieChart.width = Math.floor(cssWidth * dpr);
+      pieChart.height = Math.floor(cssHeight * dpr);
+      pieCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      pieCtx.clearRect(0, 0, cssWidth, cssHeight);
+
+      const total = Math.max(1, parts.reduce((sum, part) => sum + part.value, 0));
+      const cx = cssWidth / 2;
+      const cy = cssHeight / 2;
+      const radius = Math.max(52, Math.min(cssWidth, cssHeight) * 0.38);
+      let start = -Math.PI / 2;
+
+      parts.forEach(part => {
+        const angle = part.value / total * Math.PI * 2;
+        pieCtx.beginPath();
+        pieCtx.moveTo(cx, cy);
+        pieCtx.arc(cx, cy, radius, start, start + angle);
+        pieCtx.closePath();
+        pieCtx.fillStyle = part.color;
+        pieCtx.fill();
+        pieCtx.lineWidth = 2;
+        pieCtx.strokeStyle = "#fff";
+        pieCtx.stroke();
+        start += angle;
+      });
+    }
+
+    function showTooltip(event) {
+      const rect = chart.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const y = event.clientY - rect.top;
+      const hit = barHitAreas.find(area =>
+        x >= area.x - 4 &&
+        x <= area.x + area.width + 4 &&
+        y >= area.y - 8 &&
+        y <= area.y + area.height + 8
+      );
+
+      if (!hit) {
+        tooltip.style.opacity = "0";
+        return;
+      }
+
+      tooltip.innerHTML = `
+        <strong>${hit.row.year}年目</strong>
+        <span><i></i>元本: ${yen.format(hit.row.initial)}</span>
+        <span><i></i>積立額合計: ${yen.format(hit.row.contribution)}</span>
+        <span><i></i>利息合計: ${yen.format(hit.row.interest)}</span>
+        ${hit.lower && hit.upper ? `<span><i></i>想定レンジ: ${yen.format(hit.lower.balance)}〜${yen.format(hit.upper.balance)}</span>` : ""}
+      `;
+      tooltip.style.left = `${hit.x + hit.width / 2}px`;
+      tooltip.style.top = `${Math.max(48, hit.y)}px`;
+      tooltip.style.opacity = "1";
+    }
+
+    function update() {
+      const years = Math.min(40, Math.max(1, Math.round(clampNumber(inputs.years.value, 20))));
+      const baseRate = clampNumber(inputs.rate.value, 5);
+      const rateError = Math.max(0, clampNumber(inputs.rateError.value, 1));
+      let initial = clampNumber(inputs.initial.value, 100) * 10000;
+      let monthly = clampNumber(inputs.monthly.value, 5) * 10000;
+      const goal = clampNumber(inputs.goal.value, 3000) * 10000;
+
+      if (mode === "goal") {
+        initial = 0;
+        monthly = monthlyNeeded(goal, years, baseRate - (inputs.fee.checked ? 0.2 : 0));
+      }
+
+      const baseRows = simulate({ initial, monthly, years, annualRate: baseRate, tax: inputs.tax.checked, fee: inputs.fee.checked });
+      const lowerRows = rateError > 0
+        ? simulate({ initial, monthly, years, annualRate: baseRate - rateError, tax: inputs.tax.checked, fee: inputs.fee.checked })
+        : null;
+      const upperRows = rateError > 0
+        ? simulate({ initial, monthly, years, annualRate: baseRate + rateError, tax: inputs.tax.checked, fee: inputs.fee.checked })
+        : null;
+      const last = baseRows[baseRows.length - 1];
+
+      document.querySelector("#headline").textContent = mode === "goal" ? `${years}年で目標に届く積立額` : `${years}年後の運用結果`;
+      document.querySelector("#lead").textContent = mode === "goal"
+        ? "目標金額から毎月の必要積立額を逆算し、利回り誤差をエラーバーで確認できます。"
+        : "入力条件に対して、年ごとの積立額推移と利回り誤差を同じ視線で確認できます。";
+      document.querySelector("#mainLabel").textContent = mode === "goal" ? "必要な毎月積立額" : "運用の結果";
+      document.querySelector("#mainValue").textContent = mode === "goal" ? `${yen.format(monthly)} / 月` : yen.format(last.balance);
+
+      document.querySelector("#initialValue").textContent = yen.format(initial);
+      document.querySelector("#contribValue").textContent = yen.format(last.contribution);
+      document.querySelector("#interestValue").textContent = yen.format(last.interest);
+      document.querySelector("#detailInitial").textContent = yen.format(initial);
+      document.querySelector("#detailContrib").textContent = yen.format(last.contribution);
+      document.querySelector("#detailInterest").textContent = yen.format(last.interest);
+      document.querySelector("#detailAdjust").textContent = `${inputs.tax.checked ? "税ON" : "税OFF"} / ${inputs.fee.checked ? "手数料ON" : "手数料OFF"}`;
+
+      document.querySelector("#rows").innerHTML = baseRows.map(r => `
+        <tr>
+          <td>${r.year}年目</td>
+          <td>${yen.format(r.initial)}</td>
+          <td>${yen.format(r.contribution)}</td>
+          <td>${yen.format(r.interest)}</td>
+          <td>${yen.format(r.balance)}</td>
+        </tr>
+      `).join("");
+
+      drawStackedBarChart(baseRows, mode === "goal" ? goal : null, lowerRows, upperRows);
+      drawPieChart([
+        { label: "元本", value: initial, color: "#bdcff9" },
+        { label: "積立額合計", value: last.contribution, color: "#3975c5" },
+        { label: "利息合計", value: last.interest, color: "#073f98" }
+      ]);
+    }
+
+    document.querySelectorAll("[data-mode]").forEach(button => {
+      button.addEventListener("click", () => {
+        mode = button.dataset.mode;
+        document.body.classList.toggle("goal-mode", mode === "goal");
+        document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("active", b === button));
+        update();
+      });
+    });
+
+    Object.values(inputs).forEach(input => input.addEventListener("input", update));
+    chart.addEventListener("mousemove", showTooltip);
+    chart.addEventListener("mouseleave", () => { tooltip.style.opacity = "0"; });
+    window.addEventListener("resize", update);
+    update();
+  </script>
+</body>
+</html>
