@@ -240,24 +240,6 @@
       font-size: 14px;
     }
 
-    .actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .icon-button {
-      width: 40px;
-      height: 40px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      color: var(--ink);
-      background: #fff;
-      cursor: pointer;
-      box-shadow: 0 3px 10px rgba(30,45,70,.05);
-    }
-
     .hero-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -524,7 +506,6 @@
 
     @media (max-width: 620px) {
       .topbar { display: block; }
-      .actions { justify-content: flex-start; margin-top: 14px; }
       .sidebar,
       .content { padding: 16px; }
       .section-heading { display: block; }
@@ -592,11 +573,6 @@
         <div>
           <h2 id="headline">20年後の運用結果</h2>
           <p id="lead">基本の積立シミュレーションに、税金と利回り誤差の現実味を足した画面イメージです。</p>
-        </div>
-        <div class="actions" aria-label="アクション">
-          <button class="icon-button" title="共有" type="button">↗</button>
-          <button class="icon-button" title="CSV出力" type="button">↓</button>
-          <button class="icon-button" title="保存" type="button">☆</button>
         </div>
       </div>
 
