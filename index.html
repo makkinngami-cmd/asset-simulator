@@ -457,7 +457,7 @@
 
     table {
       width: 100%;
-      min-width: 640px;
+      min-width: 520px;
       border-collapse: collapse;
       font-size: 13px;
     }
@@ -511,6 +511,11 @@
       .section-heading { display: block; }
       .section-total { margin-top: 4px; font-size: 20px; }
       .pie-layout { grid-template-columns: 1fr; }
+      canvas { height: 250px; }
+      th, td { padding: 8px 6px; font-size: 12px; }
+      table { min-width: 400px; }
+      .topbar h2 { font-size: 20px; }
+      .topbar p { font-size: 13px; }
     }
   </style>
 </head>
@@ -622,6 +627,7 @@
   </main>
 
   <script>
+    const STORAGE_KEY = "asset-sim-v1";
     const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
     const inputs = {
       initial: document.querySelector("#initial"),
@@ -712,7 +718,7 @@
       ctx.clearRect(0, 0, cssWidth, cssHeight);
       barHitAreas = [];
 
-      const pad = { top: 22, right: 18, bottom: 38, left: 72 };
+      const pad = { top: 22, right: 18, bottom: 38, left: 58 };
       const width = cssWidth - pad.left - pad.right;
       const height = cssHeight - pad.top - pad.bottom;
       const rangeValues = [...(lowerRows || []), ...(upperRows || [])].map(r => r.balance);
@@ -737,11 +743,11 @@
         ctx.moveTo(pad.left, y);
         ctx.lineTo(pad.left + width, y);
         ctx.stroke();
-        ctx.fillText(Math.round(value / 10000).toLocaleString("ja-JP") + "万円", pad.left - 9, y);
+        ctx.fillText(Math.round(value / 10000).toLocaleString("ja-JP") + "万", pad.left - 6, y);
       }
 
       const gap = Math.min(16, Math.max(4, width / rows.length * 0.24));
-      const barWidth = Math.max(9, (width - gap * (rows.length - 1)) / rows.length);
+      const barWidth = Math.max(13, (width - gap * (rows.length - 1)) / rows.length);
       const colors = ["#bdcff9", "#3975c5", "#073f98"];
 
       rows.forEach((r, index) => {
@@ -917,19 +923,56 @@
       ]);
     }
 
+    function saveState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          mode,
+          initial: inputs.initial.value,
+          monthly: inputs.monthly.value,
+          years: inputs.years.value,
+          rate: inputs.rate.value,
+          rateError: inputs.rateError.value,
+          goal: inputs.goal.value,
+          tax: inputs.tax.checked
+        }));
+      } catch {}
+    }
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        if (s.mode === "goal") {
+          mode = "goal";
+          document.body.classList.add("goal-mode");
+          document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("active", b.dataset.mode === "goal"));
+        }
+        if (s.initial != null) inputs.initial.value = s.initial;
+        if (s.monthly != null) inputs.monthly.value = s.monthly;
+        if (s.years != null) inputs.years.value = s.years;
+        if (s.rate != null) inputs.rate.value = s.rate;
+        if (s.rateError != null) inputs.rateError.value = s.rateError;
+        if (s.goal != null) inputs.goal.value = s.goal;
+        if (s.tax != null) inputs.tax.checked = s.tax;
+      } catch {}
+    }
+
     document.querySelectorAll("[data-mode]").forEach(button => {
       button.addEventListener("click", () => {
         mode = button.dataset.mode;
         document.body.classList.toggle("goal-mode", mode === "goal");
         document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("active", b === button));
+        saveState();
         update();
       });
     });
 
-    Object.values(inputs).forEach(input => input.addEventListener("input", update));
+    Object.values(inputs).forEach(input => input.addEventListener("input", () => { saveState(); update(); }));
     chart.addEventListener("mousemove", showTooltip);
     chart.addEventListener("mouseleave", () => { tooltip.style.opacity = "0"; });
     window.addEventListener("resize", update);
+    loadState();
     update();
   </script>
 </body>
