@@ -550,6 +550,11 @@
         <div class="input-wrap"><input id="goal" type="number" min="0" step="100" value="3000"><span class="unit">万円</span></div>
       </div>
 
+      <div class="field goal-only">
+        <label for="goalInitial">元本 <span class="hint">現在の保有額</span></label>
+        <div class="input-wrap"><input id="goalInitial" type="number" min="0" step="10" value="0"><span class="unit">万円</span></div>
+      </div>
+
       <div class="field">
         <label for="years">運用期間 <span class="hint">1年から40年</span></label>
         <div class="input-wrap"><input id="years" type="number" min="1" max="40" step="1" value="20"><span class="unit">年</span></div>
@@ -636,6 +641,7 @@
       rate: document.querySelector("#rate"),
       rateError: document.querySelector("#rateError"),
       goal: document.querySelector("#goal"),
+      goalInitial: document.querySelector("#goalInitial"),
       tax: document.querySelector("#tax")
     };
     const chart = document.querySelector("#lineChart");
@@ -651,12 +657,14 @@
       return Number.isFinite(n) ? n : fallback;
     }
 
-    function monthlyNeeded(goal, years, annualRate) {
+    function monthlyNeeded(goal, years, annualRate, initial = 0) {
       const months = years * 12;
       const monthlyRate = annualRate / 100 / 12;
       if (months <= 0) return 0;
-      if (Math.abs(monthlyRate) < 0.000001) return goal / months;
-      return goal * monthlyRate / (Math.pow(1 + monthlyRate, months) - 1);
+      const fvInitial = initial * Math.pow(1 + monthlyRate, months);
+      const remaining = Math.max(0, goal - fvInitial);
+      if (Math.abs(monthlyRate) < 0.000001) return remaining / months;
+      return remaining * monthlyRate / (Math.pow(1 + monthlyRate, months) - 1);
     }
 
     function niceStep(roughStep) {
@@ -881,8 +889,8 @@
       const goal = clampNumber(inputs.goal.value, 3000) * 10000;
 
       if (mode === "goal") {
-        initial = 0;
-        monthly = monthlyNeeded(goal, years, baseRate);
+        initial = clampNumber(inputs.goalInitial.value, 0) * 10000;
+        monthly = monthlyNeeded(goal, years, baseRate, initial);
       }
 
       const baseRows = simulate({ initial, monthly, years, annualRate: baseRate, tax: inputs.tax.checked });
@@ -933,6 +941,7 @@
           rate: inputs.rate.value,
           rateError: inputs.rateError.value,
           goal: inputs.goal.value,
+          goalInitial: inputs.goalInitial.value,
           tax: inputs.tax.checked
         }));
       } catch {}
@@ -954,6 +963,7 @@
         if (s.rate != null) inputs.rate.value = s.rate;
         if (s.rateError != null) inputs.rateError.value = s.rateError;
         if (s.goal != null) inputs.goal.value = s.goal;
+        if (s.goalInitial != null) inputs.goalInitial.value = s.goalInitial;
         if (s.tax != null) inputs.tax.checked = s.tax;
       } catch {}
     }
