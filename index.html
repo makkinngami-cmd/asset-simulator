@@ -736,8 +736,9 @@
       ctx.textBaseline = "middle";
 
       for (let i = 0; i <= tickCount; i++) {
-        const y = pad.top + height - (height * i / tickCount);
         const value = tickStep * i;
+        if (value > max) break;
+        const y = pad.top + height - (value / max * height);
         ctx.beginPath();
         ctx.moveTo(pad.left, y);
         ctx.lineTo(pad.left + width, y);
