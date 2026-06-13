@@ -584,11 +584,6 @@
         <label class="toggle"><input id="tax" type="checkbox" checked><i></i></label>
       </div>
 
-      <div class="switch-row">
-        <div><strong>手数料を考慮</strong><span>年0.2%を利回りから控除</span></div>
-        <label class="toggle"><input id="fee" type="checkbox" checked><i></i></label>
-      </div>
-
       <p class="note">本ツールは概算シミュレーションです。投資判断、税務判断、将来の運用成果を保証するものではありません。</p>
     </aside>
 
@@ -596,7 +591,7 @@
       <div class="topbar">
         <div>
           <h2 id="headline">20年後の運用結果</h2>
-          <p id="lead">基本の積立シミュレーションに、比較シナリオと税金・手数料の現実味を足した画面イメージです。</p>
+          <p id="lead">基本の積立シミュレーションに、税金と利回り誤差の現実味を足した画面イメージです。</p>
         </div>
         <div class="actions" aria-label="アクション">
           <button class="icon-button" title="共有" type="button">↗</button>
@@ -630,7 +625,7 @@
               <li><span>元本</span><b id="detailInitial">¥0</b></li>
               <li><span>積立額合計</span><b id="detailContrib">¥0</b></li>
               <li><span>利息合計</span><b id="detailInterest">¥0</b></li>
-              <li><span>税・手数料</span><b id="detailAdjust">ON</b></li>
+              <li><span>税金</span><b id="detailAdjust">ON</b></li>
             </ul>
           </div>
         </div>
@@ -659,8 +654,7 @@
       rate: document.querySelector("#rate"),
       rateError: document.querySelector("#rateError"),
       goal: document.querySelector("#goal"),
-      tax: document.querySelector("#tax"),
-      fee: document.querySelector("#fee")
+      tax: document.querySelector("#tax")
     };
     const chart = document.querySelector("#lineChart");
     const ctx = chart.getContext("2d");
@@ -695,9 +689,8 @@
       return nice * magnitude;
     }
 
-    function simulate({ initial, monthly, years, annualRate, tax, fee }) {
-      const feeAdjustedRate = annualRate - (fee ? 0.2 : 0);
-      const monthlyRate = feeAdjustedRate / 100 / 12;
+    function simulate({ initial, monthly, years, annualRate, tax }) {
+      const monthlyRate = annualRate / 100 / 12;
       const rows = [];
       let balance = initial;
       let totalContrib = 0;
@@ -907,15 +900,15 @@
 
       if (mode === "goal") {
         initial = 0;
-        monthly = monthlyNeeded(goal, years, baseRate - (inputs.fee.checked ? 0.2 : 0));
+        monthly = monthlyNeeded(goal, years, baseRate);
       }
 
-      const baseRows = simulate({ initial, monthly, years, annualRate: baseRate, tax: inputs.tax.checked, fee: inputs.fee.checked });
+      const baseRows = simulate({ initial, monthly, years, annualRate: baseRate, tax: inputs.tax.checked });
       const lowerRows = rateError > 0
-        ? simulate({ initial, monthly, years, annualRate: baseRate - rateError, tax: inputs.tax.checked, fee: inputs.fee.checked })
+        ? simulate({ initial, monthly, years, annualRate: baseRate - rateError, tax: inputs.tax.checked })
         : null;
       const upperRows = rateError > 0
-        ? simulate({ initial, monthly, years, annualRate: baseRate + rateError, tax: inputs.tax.checked, fee: inputs.fee.checked })
+        ? simulate({ initial, monthly, years, annualRate: baseRate + rateError, tax: inputs.tax.checked })
         : null;
       const last = baseRows[baseRows.length - 1];
 
@@ -928,7 +921,7 @@
       document.querySelector("#detailInitial").textContent = yen.format(initial);
       document.querySelector("#detailContrib").textContent = yen.format(last.contribution);
       document.querySelector("#detailInterest").textContent = yen.format(last.interest);
-      document.querySelector("#detailAdjust").textContent = `${inputs.tax.checked ? "税ON" : "税OFF"} / ${inputs.fee.checked ? "手数料ON" : "手数料OFF"}`;
+      document.querySelector("#detailAdjust").textContent = inputs.tax.checked ? "税ON" : "税OFF";
 
       document.querySelector("#rows").innerHTML = baseRows.map(r => `
         <tr>

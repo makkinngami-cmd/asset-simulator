@@ -20,3 +20,4 @@
 - GitHub CLIログイン後、`https://github.com/makkinngami-cmd/asset-simulator` を作成してpushした。
 - GitHub Pagesを有効化し、`https://makkinngami-cmd.github.io/asset-simulator/` で公開した。
 - GitHub Pagesの状態が `built`、公開ページがHTTP 200、タイトルが「資産形成シミュレーター」であることを確認した。
+- 手数料ON/OFFを削除した。手数料は商品ごとの差が大きいため、固定0.2%控除ではなく利回り誤差に含めて扱う方針に変更した。
