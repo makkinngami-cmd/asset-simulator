@@ -721,8 +721,7 @@
       const pad = { top: 22, right: 18, bottom: 38, left: 58 };
       const width = cssWidth - pad.left - pad.right;
       const height = cssHeight - pad.top - pad.bottom;
-      const rangeValues = [...(lowerRows || []), ...(upperRows || [])].map(r => r.balance);
-      const allValues = rows.map(r => r.balance).concat(rangeValues, goalValue ? [goalValue] : []);
+      const allValues = rows.map(r => r.balance).concat(goalValue ? [goalValue] : []);
       const maxValue = Math.max(1000000, ...allValues);
       const tickCount = 5;
       const tickStep = niceStep(maxValue / tickCount);
