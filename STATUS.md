@@ -3,14 +3,20 @@
 更新日: 2026-06-13
 
 ## 進捗
-60%
+80%
 
 ## ゴール
-☑ 7-1. 資産形成シミュレーター — Codexからコード移管済み。GitHub Pages公開に向けて調整・保守を進める。
+☑ 7-1. 資産形成シミュレーター — Codexからコード移管済み。GitHub Pagesで公開済み。
 
 ## 現在地
 Codexで作成した資産形成シミュレーターを `C:\Users\makki\asset-simulator\index.html` にコピー済み。
 単一HTMLの静的Webアプリとして動作する。
+
+公開URL:
+`https://makkinngami-cmd.github.io/asset-simulator/`
+
+GitHub:
+`https://github.com/makkinngami-cmd/asset-simulator`
 
 ## 直近の完了（2026-06-13時点）
 - Codex側で資産形成シミュレーターのHTMLモックを作成
@@ -24,13 +30,13 @@ Codexで作成した資産形成シミュレーターを `C:\Users\makki\asset-s
 - GitHub Pages向けに `index.html` として移管
 - 公開用に `README.md`、`.nojekyll`、`PUBLISH_GITHUB_PAGES.md` を追加
 - `index.html` のタイトルから「モック」を外し、免責文を公開向けに調整
+- GitHubに `asset-simulator` リポジトリを作成
+- GitHub Pagesを有効化し、公開URLでHTTP 200を確認
 
 ## 次にやること
-1. GitHub CLIにログインする ／ ユーザー
-2. GitHubリポジトリを作成してpushする ／ Claude
-3. GitHub Pagesで公開する ／ Claude
-4. 公開URLで動作確認する ／ Claude
-5. スマホ表示と入力変更時のグラフ表示を再確認する ／ Claude
+1. スマホ表示と入力変更時のグラフ表示を再確認する ／ Claude
+2. 必要ならOGP、favicon、説明文を追加する ／ Claude
+3. 必要なら独自ドメイン設定を検討する ／ ユーザー
 
 ## タイムスケジュール
 - 随時 | GitHub Pages公開準備 | Claude

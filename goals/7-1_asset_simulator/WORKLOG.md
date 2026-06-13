@@ -17,3 +17,6 @@
 - Claude Code引き継ぎ用に `CLAUDE.md`、`STATUS.md`、`SESSION.md`、`HANDOFF.md`、`WORKLOG.md` を更新した。
 - GitHub Pages公開準備としてローカルGitリポジトリを初期化し、`README.md`、`.nojekyll`、`PUBLISH_GITHUB_PAGES.md` を追加した。
 - `index.html` のタイトルから「モック」を外し、免責文を公開向けに調整した。
+- GitHub CLIログイン後、`https://github.com/makkinngami-cmd/asset-simulator` を作成してpushした。
+- GitHub Pagesを有効化し、`https://makkinngami-cmd.github.io/asset-simulator/` で公開した。
+- GitHub Pagesの状態が `built`、公開ページがHTTP 200、タイトルが「資産形成シミュレーター」であることを確認した。
