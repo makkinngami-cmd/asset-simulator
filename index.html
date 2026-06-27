@@ -81,7 +81,7 @@
 
     .mode-tabs {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1fr 1fr;
       gap: 6px;
       padding: 4px;
       margin-bottom: 22px;
@@ -97,6 +97,8 @@
       color: var(--muted);
       background: transparent;
       cursor: pointer;
+      font-size: 13px;
+      padding: 0 2px;
     }
 
     .mode-tabs button.active {
@@ -498,9 +500,82 @@
 
     .back-link:hover { text-decoration: underline; }
 
-    .goal-only { display: none; }
+    .goal-only,
+    .withdraw-only { display: none; }
     body.goal-mode .goal-only { display: grid; }
     body.goal-mode .normal-only { display: none; }
+    body.withdraw-mode .withdraw-only { display: grid; }
+    body.withdraw-mode .normal-only,
+    body.withdraw-mode .accumulate-only { display: none; }
+
+    .amount-only,
+    .rate-only { display: none; }
+    body.withdraw-mode .amount-only,
+    body.withdraw-mode .rate-only { display: none; }
+    body.withdraw-mode.method-amount .amount-only { display: grid; }
+    body.withdraw-mode.method-rate .rate-only { display: grid; }
+
+    /* display上書き：grid化で崩れる要素を本来の表示に戻す */
+    body.withdraw-mode .lifespan-card { display: flex; }
+    body.withdraw-mode table.withdraw-only { display: table; }
+    body.withdraw-mode .legend.withdraw-only { display: flex; }
+
+    .seg-toggle {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+    }
+
+    .seg-toggle button {
+      min-height: 36px;
+      border: 0;
+      border-radius: 6px;
+      color: var(--muted);
+      background: transparent;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .seg-toggle button.active {
+      color: var(--ink);
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(20, 40, 70, .08);
+      font-weight: 700;
+    }
+
+    .lifespan-card {
+      align-items: baseline;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 16px 18px;
+      margin-bottom: 18px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+      color: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .lifespan-card .lifespan-label {
+      font-size: 14px;
+      font-weight: 700;
+      opacity: .9;
+    }
+
+    .lifespan-card .lifespan-value {
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1.1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lifespan-card .lifespan-sub {
+      font-size: 13px;
+      opacity: .9;
+    }
 
     @media (max-width: 980px) {
       .app { grid-template-columns: 1fr; }
@@ -541,8 +616,9 @@
       </div>
 
       <div class="mode-tabs" aria-label="計算モード">
-        <button class="active" type="button" data-mode="normal">積立から計算</button>
-        <button type="button" data-mode="goal">目標から逆算</button>
+        <button class="active" type="button" data-mode="normal">積立</button>
+        <button type="button" data-mode="goal">目標逆算</button>
+        <button type="button" data-mode="withdraw">取り崩し</button>
       </div>
 
       <div class="field normal-only">
@@ -565,7 +641,40 @@
         <div class="input-wrap"><input id="goalInitial" type="number" min="0" step="10" value="0"><span class="unit">万円</span></div>
       </div>
 
-      <div class="field">
+      <div class="field withdraw-only">
+        <label for="startAssets">開始資産 <span class="hint">取り崩し開始時の額</span></label>
+        <div class="input-wrap"><input id="startAssets" type="number" min="0" step="100" value="3000"><span class="unit">万円</span></div>
+      </div>
+
+      <div class="field withdraw-only">
+        <label>取り崩し方式 <span class="hint">定額か定率か</span></label>
+        <div class="seg-toggle" aria-label="取り崩し方式">
+          <button type="button" class="active" data-method="amount">定額</button>
+          <button type="button" data-method="rate">定率</button>
+        </div>
+      </div>
+
+      <div class="field withdraw-only amount-only">
+        <label for="withdrawAmount">毎月の取り崩し額 <span class="hint">毎月使う額</span></label>
+        <div class="input-wrap"><input id="withdrawAmount" type="number" min="0" step="1" value="10"><span class="unit">万円</span></div>
+      </div>
+
+      <div class="field withdraw-only amount-only">
+        <label for="inflation">インフレ率 <span class="hint">取り崩し額を毎年増額</span></label>
+        <div class="input-wrap"><input id="inflation" type="number" min="0" max="10" step="0.1" value="0"><span class="unit">%</span></div>
+      </div>
+
+      <div class="field withdraw-only rate-only">
+        <label for="withdrawRate">毎年の取り崩し率 <span class="hint">残高に対する割合</span></label>
+        <div class="input-wrap"><input id="withdrawRate" type="number" min="0" max="20" step="0.1" value="4"><span class="unit">%</span></div>
+      </div>
+
+      <div class="field withdraw-only">
+        <label for="withdrawYears">取り崩し期間 <span class="hint">最大60年で確認</span></label>
+        <div class="input-wrap"><input id="withdrawYears" type="number" min="1" max="60" step="1" value="30"><span class="unit">年</span></div>
+      </div>
+
+      <div class="field accumulate-only">
         <label for="years">運用期間 <span class="hint">1年から40年</span></label>
         <div class="input-wrap"><input id="years" type="number" min="1" max="40" step="1" value="20"><span class="unit">年</span></div>
       </div>
@@ -585,7 +694,7 @@
         <label class="toggle"><input id="tax" type="checkbox" checked><i></i></label>
       </div>
 
-      <p class="note">本ツールは概算シミュレーションです。投資判断、税務判断、将来の運用成果を保証するものではありません。</p>
+      <p class="note">本ツールは概算シミュレーションです。税金・インフレは簡易的に反映した概算であり、投資判断、税務判断、将来の運用成果を保証するものではありません。</p>
 
       <a class="back-link" href="https://makkinngami-cmd.github.io/asset-navi/index.html">← アセットナビに戻る</a>
     </aside>
@@ -598,21 +707,28 @@
         </div>
       </div>
 
+      <div class="lifespan-card withdraw-only">
+        <span class="lifespan-label" id="lifespanLabel">資産寿命</span>
+        <span class="lifespan-value" id="lifespanValue">—</span>
+        <span class="lifespan-sub" id="lifespanSub"></span>
+      </div>
+
       <div class="hero-grid">
         <div class="panel chart-panel">
           <div class="chart-head">
-            <h3>毎年の積立金額推移</h3>
-            <div class="legend"><span><i></i>元本</span><span><i></i>積立額合計</span><span><i></i>利息合計</span><span><i></i>利回り誤差</span></div>
+            <h3 id="chartTitle">毎年の積立金額推移</h3>
+            <div class="legend accumulate-only"><span><i></i>元本</span><span><i></i>積立額合計</span><span><i></i>利息合計</span><span><i></i>利回り誤差</span></div>
+            <div class="legend withdraw-only"><span><i style="background:var(--contrib)"></i>残高</span><span><i style="width:16px;height:2px;border-radius:0;background:var(--red)"></i>利回り誤差</span></div>
           </div>
           <div class="chart-wrap">
-            <canvas id="lineChart" width="760" height="420" aria-label="毎年の積立金額推移グラフ"></canvas>
+            <canvas id="lineChart" width="760" height="420" aria-label="推移グラフ"></canvas>
             <div class="chart-tooltip" id="chartTooltip" aria-hidden="true"></div>
           </div>
         </div>
       </div>
 
       <div class="below-grid">
-        <div class="panel breakdown">
+        <div class="panel breakdown accumulate-only">
           <div class="section-heading">
             <h3>最終的な積立金の内訳</h3>
             <div class="section-total" id="finalTotal">¥0</div>
@@ -628,14 +744,33 @@
           </div>
         </div>
 
+        <div class="panel breakdown withdraw-only">
+          <div class="section-heading">
+            <h3>取り崩しのまとめ</h3>
+            <div class="section-total" id="wFinalTotal">¥0</div>
+          </div>
+          <ul class="detail-list">
+            <li><span>開始資産</span><b id="wStart">¥0</b></li>
+            <li><span>取り崩し総額</span><b id="wTotalWithdrawn">¥0</b></li>
+            <li><span>運用益合計</span><b id="wTotalGrowth">¥0</b></li>
+            <li><span>終了時の残高</span><b id="wEndBalance">¥0</b></li>
+          </ul>
+        </div>
+
         <div class="panel table-panel">
-          <h3>年ごとの推移</h3>
+          <h3 id="tableTitle">年ごとの推移</h3>
           <div class="table-scroll">
-            <table>
+            <table class="accumulate-only">
               <thead>
                 <tr><th>年</th><th>元本</th><th>積立額合計</th><th>利息合計</th><th>運用結果</th></tr>
               </thead>
               <tbody id="rows"></tbody>
+            </table>
+            <table class="withdraw-only">
+              <thead>
+                <tr><th>年</th><th>取り崩し額</th><th>運用益</th><th>残高</th></tr>
+              </thead>
+              <tbody id="wRows"></tbody>
             </table>
           </div>
         </div>
@@ -654,6 +789,11 @@
       rateError: document.querySelector("#rateError"),
       goal: document.querySelector("#goal"),
       goalInitial: document.querySelector("#goalInitial"),
+      startAssets: document.querySelector("#startAssets"),
+      withdrawAmount: document.querySelector("#withdrawAmount"),
+      inflation: document.querySelector("#inflation"),
+      withdrawRate: document.querySelector("#withdrawRate"),
+      withdrawYears: document.querySelector("#withdrawYears"),
       tax: document.querySelector("#tax")
     };
     const chart = document.querySelector("#lineChart");
@@ -663,6 +803,7 @@
     const tooltip = document.querySelector("#chartTooltip");
     let barHitAreas = [];
     let mode = "normal";
+    let withdrawMethod = "amount";
 
     function clampNumber(value, fallback) {
       const n = Number(value);
@@ -726,6 +867,133 @@
       }
 
       return rows;
+    }
+
+    function simulateWithdraw({ start, method, monthlyAmount, withdrawRatePct, years, annualRate, inflationPct, tax }) {
+      const rows = [];
+      let balance = start;
+      let depletedYear = null;
+      let totalWithdrawn = 0;
+      let totalGrowth = 0;
+
+      for (let year = 1; year <= years; year++) {
+        const startBal = balance;
+        let withdrawal;
+        if (method === "amount") {
+          const infFactor = Math.pow(1 + inflationPct / 100, year - 1);
+          withdrawal = monthlyAmount * 12 * infFactor;
+        } else {
+          withdrawal = startBal * (withdrawRatePct / 100);
+        }
+        const actualWithdrawal = Math.min(withdrawal, startBal);
+        const afterWithdraw = startBal - actualWithdrawal;
+        const growth = afterWithdraw * (annualRate / 100);
+        const taxAmount = (tax && growth > 0) ? growth * 0.20315 : 0;
+        const netGrowth = growth - taxAmount;
+        balance = afterWithdraw + netGrowth;
+        totalWithdrawn += actualWithdrawal;
+        totalGrowth += netGrowth;
+        rows.push({
+          year,
+          withdrawal: actualWithdrawal,
+          growth: netGrowth,
+          balance: Math.max(0, balance)
+        });
+        if (balance <= 0 && depletedYear === null) {
+          depletedYear = year;
+          balance = 0;
+          break;
+        }
+      }
+
+      return { rows, depletedYear, totalWithdrawn, totalGrowth, endBalance: Math.max(0, balance) };
+    }
+
+    function drawWithdrawChart(rows, lowerRows, upperRows) {
+      const dpr = window.devicePixelRatio || 1;
+      const cssWidth = chart.clientWidth;
+      const cssHeight = chart.clientHeight;
+      chart.width = Math.floor(cssWidth * dpr);
+      chart.height = Math.floor(cssHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cssWidth, cssHeight);
+      barHitAreas = [];
+
+      const pad = { top: 22, right: 18, bottom: 38, left: 58 };
+      const width = cssWidth - pad.left - pad.right;
+      const height = cssHeight - pad.top - pad.bottom;
+      const rangeValues = [...(lowerRows || []), ...(upperRows || [])].map(r => r.balance);
+      const allValues = rows.map(r => r.balance).concat(rangeValues);
+      const maxValue = Math.max(1000000, ...allValues);
+      const tickCount = 5;
+      const tickStep = niceStep(maxValue / tickCount);
+      const max = Math.ceil(maxValue / tickStep) * tickStep;
+      const years = rows.length;
+
+      ctx.strokeStyle = "#dfe5ef";
+      ctx.lineWidth = 1;
+      ctx.fillStyle = "#657085";
+      ctx.font = "12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+      ctx.textAlign = "right";
+      ctx.textBaseline = "middle";
+
+      for (let i = 0; i <= tickCount; i++) {
+        const value = tickStep * i;
+        if (value > max) break;
+        const y = pad.top + height - (value / max * height);
+        ctx.beginPath();
+        ctx.moveTo(pad.left, y);
+        ctx.lineTo(pad.left + width, y);
+        ctx.stroke();
+        ctx.fillText(Math.round(value / 10000).toLocaleString("ja-JP") + "万", pad.left - 6, y);
+      }
+
+      const gap = Math.min(12, Math.max(2, width / Math.max(1, years) * 0.18));
+      const barWidth = Math.max(5, (width - gap * (years - 1)) / years);
+
+      rows.forEach((r, index) => {
+        const x = pad.left + index * (barWidth + gap);
+        const segmentHeight = Math.max(0, r.balance / max * height);
+        const y = pad.top + height - segmentHeight;
+        ctx.fillStyle = "#3975c5";
+        ctx.fillRect(x, y, barWidth, segmentHeight);
+        const lower = lowerRows ? lowerRows[index] : null;
+        const upper = upperRows ? upperRows[index] : null;
+        barHitAreas.push({ x, y, width: barWidth, height: segmentHeight, row: r, lower, upper, withdraw: true });
+      });
+
+      if (lowerRows && upperRows) {
+        ctx.strokeStyle = "#d95c5c";
+        ctx.lineWidth = 2;
+        rows.forEach((r, index) => {
+          const lower = lowerRows[index];
+          const upper = upperRows[index];
+          if (!lower || !upper || Math.abs(upper.balance - lower.balance) < 1) return;
+          const x = pad.left + index * (barWidth + gap) + barWidth / 2;
+          const yLow = pad.top + height - (lower.balance / max) * height;
+          const yHigh = pad.top + height - (upper.balance / max) * height;
+          const cap = Math.min(18, Math.max(8, barWidth * .7));
+          ctx.beginPath();
+          ctx.moveTo(x, yHigh);
+          ctx.lineTo(x, yLow);
+          ctx.moveTo(x - cap / 2, yHigh);
+          ctx.lineTo(x + cap / 2, yHigh);
+          ctx.moveTo(x - cap / 2, yLow);
+          ctx.lineTo(x + cap / 2, yLow);
+          ctx.stroke();
+        });
+      }
+
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#657085";
+      const labelYears = years <= 12
+        ? rows.map(r => r.year)
+        : Array.from(new Set([1, Math.ceil(years / 2), years]));
+      labelYears.forEach(year => {
+        const index = year - 1;
+        const x = pad.left + index * (barWidth + gap) + barWidth / 2;
+        ctx.fillText(year + "年目", x, pad.top + height + 24);
+      });
     }
 
     function drawStackedBarChart(rows, goalValue, lowerRows, upperRows) {
@@ -880,19 +1148,91 @@
         return;
       }
 
-      tooltip.innerHTML = `
-        <strong>${hit.row.year}年目</strong>
-        <span><i></i>元本: ${yen.format(hit.row.initial)}</span>
-        <span><i></i>積立額合計: ${yen.format(hit.row.contribution)}</span>
-        <span><i></i>利息合計: ${yen.format(hit.row.interest)}</span>
-        ${hit.lower && hit.upper ? `<span><i></i>想定レンジ: ${yen.format(hit.lower.balance)}〜${yen.format(hit.upper.balance)}</span>` : ""}
-      `;
+      if (hit.withdraw) {
+        tooltip.innerHTML = `
+          <strong>${hit.row.year}年目</strong>
+          <span><i style="background:var(--contrib)"></i>残高: ${yen.format(hit.row.balance)}</span>
+          <span><i style="background:var(--principal)"></i>取り崩し額: ${yen.format(hit.row.withdrawal)}</span>
+          <span><i style="background:var(--interest)"></i>運用益: ${yen.format(hit.row.growth)}</span>
+          ${hit.lower && hit.upper ? `<span><i style="background:var(--red)"></i>想定レンジ: ${yen.format(hit.lower.balance)}〜${yen.format(hit.upper.balance)}</span>` : ""}
+        `;
+      } else {
+        tooltip.innerHTML = `
+          <strong>${hit.row.year}年目</strong>
+          <span><i></i>元本: ${yen.format(hit.row.initial)}</span>
+          <span><i></i>積立額合計: ${yen.format(hit.row.contribution)}</span>
+          <span><i></i>利息合計: ${yen.format(hit.row.interest)}</span>
+          ${hit.lower && hit.upper ? `<span><i></i>想定レンジ: ${yen.format(hit.lower.balance)}〜${yen.format(hit.upper.balance)}</span>` : ""}
+        `;
+      }
       tooltip.style.left = `${hit.x + hit.width / 2}px`;
       tooltip.style.top = `${Math.max(48, hit.y)}px`;
       tooltip.style.opacity = "1";
     }
 
+    function updateWithdraw() {
+      const years = Math.min(60, Math.max(1, Math.round(clampNumber(inputs.withdrawYears.value, 30))));
+      const baseRate = clampNumber(inputs.rate.value, 5);
+      const rateError = Math.max(0, clampNumber(inputs.rateError.value, 1));
+      const start = clampNumber(inputs.startAssets.value, 3000) * 10000;
+      const monthlyAmount = clampNumber(inputs.withdrawAmount.value, 10) * 10000;
+      const withdrawRatePct = Math.max(0, clampNumber(inputs.withdrawRate.value, 4));
+      const inflationPct = Math.max(0, clampNumber(inputs.inflation.value, 0));
+      const tax = inputs.tax.checked;
+
+      const common = { start, method: withdrawMethod, monthlyAmount, withdrawRatePct, years, inflationPct, tax };
+      const base = simulateWithdraw({ ...common, annualRate: baseRate });
+      const lower = rateError > 0 ? simulateWithdraw({ ...common, annualRate: baseRate - rateError }) : null;
+      const upper = rateError > 0 ? simulateWithdraw({ ...common, annualRate: baseRate + rateError }) : null;
+
+      // エラーバーは基本シナリオの年数に合わせる（尽きた年で打ち切る）
+      const lowerRows = lower ? base.rows.map((r, i) => lower.rows[i] || { balance: 0 }) : null;
+      const upperRows = upper ? base.rows.map((r, i) => upper.rows[i] || { balance: r.balance }) : null;
+
+      const depleted = base.depletedYear !== null;
+      const lifespanLabel = document.querySelector("#lifespanLabel");
+      const lifespanValue = document.querySelector("#lifespanValue");
+      const lifespanSub = document.querySelector("#lifespanSub");
+
+      if (depleted) {
+        lifespanLabel.textContent = "資産寿命";
+        lifespanValue.textContent = `約${base.depletedYear}年`;
+        lifespanSub.textContent = `この条件では${base.depletedYear}年目に資産が尽きます`;
+      } else {
+        lifespanLabel.textContent = `${years}年後の残高`;
+        lifespanValue.textContent = yen.format(base.endBalance);
+        lifespanSub.textContent = `この条件では${years}年間で尽きません`;
+      }
+
+      document.querySelector("#headline").textContent = depleted
+        ? `資産は約${base.depletedYear}年もちます`
+        : `${years}年後も資産は続きます`;
+      document.querySelector("#lead").textContent = withdrawMethod === "amount"
+        ? `毎月 ${yen.format(monthlyAmount)} を取り崩した場合の残高推移です。利回り誤差はエラーバーで確認できます。`
+        : `毎年 残高の${withdrawRatePct}% を取り崩した場合の残高推移です。取り崩し額は残高に応じて変動します。`;
+
+      document.querySelector("#chartTitle").textContent = "資産の残高推移";
+
+      document.querySelector("#wFinalTotal").textContent = yen.format(base.endBalance);
+      document.querySelector("#wStart").textContent = yen.format(start);
+      document.querySelector("#wTotalWithdrawn").textContent = yen.format(base.totalWithdrawn);
+      document.querySelector("#wTotalGrowth").textContent = yen.format(base.totalGrowth);
+      document.querySelector("#wEndBalance").textContent = yen.format(base.endBalance);
+
+      document.querySelector("#wRows").innerHTML = base.rows.map(r => `
+        <tr>
+          <td>${r.year}年目</td>
+          <td>${yen.format(r.withdrawal)}</td>
+          <td>${yen.format(r.growth)}</td>
+          <td>${yen.format(r.balance)}</td>
+        </tr>
+      `).join("");
+
+      drawWithdrawChart(base.rows, lowerRows, upperRows);
+    }
+
     function update() {
+      if (mode === "withdraw") { updateWithdraw(); return; }
       const years = Math.min(40, Math.max(1, Math.round(clampNumber(inputs.years.value, 20))));
       const baseRate = clampNumber(inputs.rate.value, 5);
       const rateError = Math.max(0, clampNumber(inputs.rateError.value, 1));
@@ -914,6 +1254,7 @@
         : null;
       const last = baseRows[baseRows.length - 1];
 
+      document.querySelector("#chartTitle").textContent = "毎年の積立金額推移";
       document.querySelector("#headline").textContent = mode === "goal" ? `${years}年で目標に届く積立額` : `${years}年後の運用結果`;
       document.querySelector("#lead").textContent = mode === "goal"
         ? `必要な毎月積立額は ${yen.format(monthly)} / 月です。利回り誤差はエラーバーで確認できます。`
@@ -947,6 +1288,7 @@
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
           mode,
+          withdrawMethod,
           initial: inputs.initial.value,
           monthly: inputs.monthly.value,
           years: inputs.years.value,
@@ -954,6 +1296,11 @@
           rateError: inputs.rateError.value,
           goal: inputs.goal.value,
           goalInitial: inputs.goalInitial.value,
+          startAssets: inputs.startAssets.value,
+          withdrawAmount: inputs.withdrawAmount.value,
+          inflation: inputs.inflation.value,
+          withdrawRate: inputs.withdrawRate.value,
+          withdrawYears: inputs.withdrawYears.value,
           tax: inputs.tax.checked
         }));
       } catch {}
@@ -964,10 +1311,13 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return;
         const s = JSON.parse(raw);
-        if (s.mode === "goal") {
-          mode = "goal";
-          document.body.classList.add("goal-mode");
-          document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("active", b.dataset.mode === "goal"));
+        if (s.mode === "goal" || s.mode === "withdraw") {
+          mode = s.mode;
+          document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("active", b.dataset.mode === mode));
+        }
+        if (s.withdrawMethod === "amount" || s.withdrawMethod === "rate") {
+          withdrawMethod = s.withdrawMethod;
+          document.querySelectorAll("[data-method]").forEach(b => b.classList.toggle("active", b.dataset.method === withdrawMethod));
         }
         if (s.initial != null) inputs.initial.value = s.initial;
         if (s.monthly != null) inputs.monthly.value = s.monthly;
@@ -976,15 +1326,37 @@
         if (s.rateError != null) inputs.rateError.value = s.rateError;
         if (s.goal != null) inputs.goal.value = s.goal;
         if (s.goalInitial != null) inputs.goalInitial.value = s.goalInitial;
+        if (s.startAssets != null) inputs.startAssets.value = s.startAssets;
+        if (s.withdrawAmount != null) inputs.withdrawAmount.value = s.withdrawAmount;
+        if (s.inflation != null) inputs.inflation.value = s.inflation;
+        if (s.withdrawRate != null) inputs.withdrawRate.value = s.withdrawRate;
+        if (s.withdrawYears != null) inputs.withdrawYears.value = s.withdrawYears;
         if (s.tax != null) inputs.tax.checked = s.tax;
       } catch {}
+    }
+
+    function applyModeClasses() {
+      document.body.classList.toggle("goal-mode", mode === "goal");
+      document.body.classList.toggle("withdraw-mode", mode === "withdraw");
+      document.body.classList.toggle("method-amount", withdrawMethod === "amount");
+      document.body.classList.toggle("method-rate", withdrawMethod === "rate");
     }
 
     document.querySelectorAll("[data-mode]").forEach(button => {
       button.addEventListener("click", () => {
         mode = button.dataset.mode;
-        document.body.classList.toggle("goal-mode", mode === "goal");
+        applyModeClasses();
         document.querySelectorAll("[data-mode]").forEach(b => b.classList.toggle("active", b === button));
+        saveState();
+        update();
+      });
+    });
+
+    document.querySelectorAll("[data-method]").forEach(button => {
+      button.addEventListener("click", () => {
+        withdrawMethod = button.dataset.method;
+        applyModeClasses();
+        document.querySelectorAll("[data-method]").forEach(b => b.classList.toggle("active", b === button));
         saveState();
         update();
       });
@@ -995,6 +1367,7 @@
     chart.addEventListener("mouseleave", () => { tooltip.style.opacity = "0"; });
     window.addEventListener("resize", update);
     loadState();
+    applyModeClasses();
     update();
   </script>
 </body>
