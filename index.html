@@ -491,14 +491,25 @@
     }
 
     .back-link {
-      display: inline-block;
-      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 16px;
+      padding: 8px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
       color: var(--blue);
+      background: var(--soft);
       font-size: 13px;
+      font-weight: 700;
       text-decoration: none;
+      transition: background .15s, border-color .15s;
     }
 
-    .back-link:hover { text-decoration: underline; }
+    .back-link:hover {
+      background: #eaf2fb;
+      border-color: var(--blue);
+    }
 
     .goal-only,
     .withdraw-only { display: none; }
@@ -607,6 +618,8 @@
 <body>
   <main class="app">
     <aside class="sidebar">
+      <a class="back-link" href="https://makkinngami-cmd.github.io/asset-navi/index.html">← アセットナビに戻る</a>
+
       <div class="brand">
         <div class="mark">¥</div>
         <div>
@@ -695,8 +708,6 @@
       </div>
 
       <p class="note">本ツールは概算シミュレーションです。税金・インフレは簡易的に反映した概算であり、投資判断、税務判断、将来の運用成果を保証するものではありません。</p>
-
-      <a class="back-link" href="https://makkinngami-cmd.github.io/asset-navi/index.html">← アセットナビに戻る</a>
     </aside>
 
     <section class="content">
