@@ -528,8 +528,10 @@
 
     /* display上書き：grid化で崩れる要素を本来の表示に戻す */
     body.withdraw-mode .lifespan-card { display: flex; }
-    body.withdraw-mode table.withdraw-only { display: table; }
     body.withdraw-mode .legend.withdraw-only { display: flex; }
+    body.withdraw-mode.method-rate table.withdraw-only.rate-only { display: table; }
+    body.withdraw-mode.method-amount table.withdraw-only.amount-only { display: table; }
+    body.withdraw-mode.method-amount .compare-panel.amount-only { display: block; }
 
     .seg-toggle {
       display: grid;
@@ -556,6 +558,67 @@
       background: #fff;
       box-shadow: 0 2px 8px rgba(20, 40, 70, .08);
       font-weight: 700;
+    }
+
+    .age-slider {
+      width: 100%;
+      margin: 2px 0;
+      accent-color: var(--blue);
+      cursor: pointer;
+    }
+
+    .slider-readout {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .slider-readout span:first-child {
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .compare-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .compare-card {
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+      text-align: center;
+    }
+
+    .compare-card.is-base {
+      border-color: var(--blue);
+      background: #eaf2fb;
+    }
+
+    .compare-card .c-age {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .compare-card .c-life {
+      font-size: 19px;
+      font-weight: 800;
+      color: var(--blue);
+      line-height: 1.2;
+      margin-top: 4px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .compare-card .c-sub {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
     }
 
     .lifespan-card {
@@ -612,6 +675,8 @@
       table { min-width: 400px; }
       .topbar h2 { font-size: 20px; }
       .topbar p { font-size: 13px; }
+      .compare-grid { grid-template-columns: 1fr 1fr; }
+      .mode-tabs button { font-size: 12px; }
     }
   </style>
 </head>
@@ -668,13 +733,34 @@
       </div>
 
       <div class="field withdraw-only amount-only">
-        <label for="withdrawAmount">毎月の取り崩し額 <span class="hint">毎月使う額</span></label>
-        <div class="input-wrap"><input id="withdrawAmount" type="number" min="0" step="1" value="10"><span class="unit">万円</span></div>
+        <label for="startAge">取り崩し開始年齢 <span class="hint">リタイア年齢</span></label>
+        <div class="input-wrap"><input id="startAge" type="number" min="50" max="80" step="1" value="65"><span class="unit">歳</span></div>
       </div>
 
       <div class="field withdraw-only amount-only">
-        <label for="inflation">インフレ率 <span class="hint">取り崩し額を毎年増額</span></label>
+        <label for="endAge">何歳まで <span class="hint">想定寿命</span></label>
+        <div class="input-wrap"><input id="endAge" type="number" min="70" max="110" step="1" value="95"><span class="unit">歳</span></div>
+      </div>
+
+      <div class="field withdraw-only amount-only">
+        <label for="withdrawAmount">毎月の生活費 <span class="hint">毎月かかる額</span></label>
+        <div class="input-wrap"><input id="withdrawAmount" type="number" min="0" step="1" value="25"><span class="unit">万円</span></div>
+      </div>
+
+      <div class="field withdraw-only amount-only">
+        <label for="inflation">インフレ率 <span class="hint">生活費を毎年増額</span></label>
         <div class="input-wrap"><input id="inflation" type="number" min="0" max="10" step="0.1" value="0"><span class="unit">%</span></div>
+      </div>
+
+      <div class="field withdraw-only amount-only">
+        <label for="pensionBase">年金の基準額 <span class="hint">65歳開始の年額</span></label>
+        <div class="input-wrap"><input id="pensionBase" type="number" min="0" step="10" value="200"><span class="unit">万円/年</span></div>
+      </div>
+
+      <div class="field withdraw-only amount-only">
+        <label for="pensionStartAge">年金の受給開始年齢 <span class="hint" id="pensionAdjustHint">基準（65歳）</span></label>
+        <input id="pensionStartAge" class="age-slider" type="range" min="60" max="75" step="1" value="65">
+        <div class="slider-readout"><span id="pensionStartAgeLabel">65歳</span><span id="pensionActualLabel">受給額 ¥0 / 年</span></div>
       </div>
 
       <div class="field withdraw-only rate-only">
@@ -682,7 +768,7 @@
         <div class="input-wrap"><input id="withdrawRate" type="number" min="0" max="20" step="0.1" value="4"><span class="unit">%</span></div>
       </div>
 
-      <div class="field withdraw-only">
+      <div class="field withdraw-only rate-only">
         <label for="withdrawYears">取り崩し期間 <span class="hint">最大60年で確認</span></label>
         <div class="input-wrap"><input id="withdrawYears" type="number" min="1" max="60" step="1" value="30"><span class="unit">年</span></div>
       </div>
@@ -707,7 +793,7 @@
         <label class="toggle"><input id="tax" type="checkbox" checked><i></i></label>
       </div>
 
-      <p class="note">本ツールは概算シミュレーションです。税金・インフレは簡易的に反映した概算であり、投資判断、税務判断、将来の運用成果を保証するものではありません。</p>
+      <p class="note">本ツールは概算シミュレーションです。税金・インフレ・年金は簡易的に反映した概算です。年金は「65歳基準額×繰上げ/繰下げ率」で計算し、在職老齢年金・加給年金・夫婦合算・年金課税などは考慮していません。厳密な年金額は「ねんきんネット」でご確認ください。投資判断、税務判断、将来の受給額・運用成果を保証するものではありません。</p>
     </aside>
 
     <section class="content">
@@ -736,6 +822,12 @@
             <div class="chart-tooltip" id="chartTooltip" aria-hidden="true"></div>
           </div>
         </div>
+      </div>
+
+      <div class="panel breakdown compare-panel withdraw-only amount-only" style="margin-top:18px;">
+        <h3>受給開始年齢でこう変わる</h3>
+        <p class="hint" style="margin:4px 0 0;font-weight:500;">同じ条件で年金の受給開始年齢だけ変えた場合の資産寿命です。</p>
+        <div class="compare-grid" id="compareGrid"></div>
       </div>
 
       <div class="below-grid">
@@ -777,7 +869,13 @@
               </thead>
               <tbody id="rows"></tbody>
             </table>
-            <table class="withdraw-only">
+            <table class="withdraw-only amount-only">
+              <thead>
+                <tr><th>年齢</th><th>生活費</th><th>年金</th><th>取り崩し額</th><th>残高</th></tr>
+              </thead>
+              <tbody id="wRowsAmount"></tbody>
+            </table>
+            <table class="withdraw-only rate-only">
               <thead>
                 <tr><th>年</th><th>取り崩し額</th><th>運用益</th><th>残高</th></tr>
               </thead>
@@ -803,6 +901,10 @@
       startAssets: document.querySelector("#startAssets"),
       withdrawAmount: document.querySelector("#withdrawAmount"),
       inflation: document.querySelector("#inflation"),
+      startAge: document.querySelector("#startAge"),
+      endAge: document.querySelector("#endAge"),
+      pensionBase: document.querySelector("#pensionBase"),
+      pensionStartAge: document.querySelector("#pensionStartAge"),
       withdrawRate: document.querySelector("#withdrawRate"),
       withdrawYears: document.querySelector("#withdrawYears"),
       tax: document.querySelector("#tax")
@@ -920,7 +1022,60 @@
       return { rows, depletedYear, totalWithdrawn, totalGrowth, endBalance: Math.max(0, balance) };
     }
 
-    function drawWithdrawChart(rows, lowerRows, upperRows) {
+    // 公的年金の繰上げ/繰下げ係数（65歳=1.0）
+    // 繰下げ: 1ヶ月 +0.7%（最大75歳 +84%）／繰上げ: 1ヶ月 -0.4%（最大60歳 -24%）
+    function pensionFactor(pensionStartAge) {
+      const months = Math.round((pensionStartAge - 65) * 12);
+      const perMonth = months >= 0 ? 0.007 : 0.004;
+      return 1 + months * perMonth;
+    }
+
+    function simulateWithdrawPension({ start, livingMonthly, inflationPct, pensionBaseYen, pensionStartAge, startAge, endAge, annualRate, tax }) {
+      const years = Math.max(0, endAge - startAge);
+      const pensionActual = pensionBaseYen * pensionFactor(pensionStartAge);
+      const rows = [];
+      let balance = start;
+      let depletedAge = null;
+      let totalWithdrawn = 0;
+      let totalGrowth = 0;
+      let totalPension = 0;
+
+      for (let i = 0; i < years; i++) {
+        const age = startAge + i;
+        const startBal = balance;
+        const infFactor = Math.pow(1 + inflationPct / 100, i);
+        const living = livingMonthly * 12 * infFactor;
+        const pension = age >= pensionStartAge ? pensionActual : 0;
+        const need = Math.max(0, living - pension);
+        const actualWithdrawal = Math.min(need, startBal);
+        const afterWithdraw = startBal - actualWithdrawal;
+        const growth = afterWithdraw * (annualRate / 100);
+        const taxAmount = (tax && growth > 0) ? growth * 0.20315 : 0;
+        const netGrowth = growth - taxAmount;
+        balance = afterWithdraw + netGrowth;
+        totalWithdrawn += actualWithdrawal;
+        totalGrowth += netGrowth;
+        totalPension += pension;
+        rows.push({
+          age,
+          year: i + 1,
+          living,
+          pension,
+          withdrawal: actualWithdrawal,
+          growth: netGrowth,
+          balance: Math.max(0, balance)
+        });
+        if (balance <= 0 && depletedAge === null) {
+          depletedAge = age;
+          balance = 0;
+          break;
+        }
+      }
+
+      return { rows, depletedAge, pensionActual, totalWithdrawn, totalGrowth, totalPension, endBalance: Math.max(0, balance) };
+    }
+
+    function drawWithdrawChart(rows, lowerRows, upperRows, opts) {
       const dpr = window.devicePixelRatio || 1;
       const cssWidth = chart.clientWidth;
       const cssHeight = chart.clientHeight;
@@ -995,15 +1150,41 @@
         });
       }
 
+      const useAge = opts && opts.ages;
+      const labelOf = (r) => useAge ? r.age + "歳" : r.year + "年目";
+
+      // 年金開始の変曲点ライン
+      if (opts && opts.pensionStartAge != null) {
+        const idx = rows.findIndex(r => r.age >= opts.pensionStartAge);
+        if (idx >= 0) {
+          const x = pad.left + idx * (barWidth + gap) - gap / 2;
+          ctx.save();
+          ctx.setLineDash([5, 4]);
+          ctx.strokeStyle = "#16a6b7";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(x, pad.top);
+          ctx.lineTo(x, pad.top + height);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = "#16a6b7";
+          ctx.font = "11px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+          ctx.textAlign = x > pad.left + width - 70 ? "right" : "left";
+          ctx.fillText("年金開始", x + (ctx.textAlign === "right" ? -4 : 4), pad.top + 8);
+          ctx.restore();
+        }
+      }
+
       ctx.textAlign = "center";
       ctx.fillStyle = "#657085";
-      const labelYears = years <= 12
-        ? rows.map(r => r.year)
-        : Array.from(new Set([1, Math.ceil(years / 2), years]));
-      labelYears.forEach(year => {
-        const index = year - 1;
+      ctx.font = "12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+      const labelIdx = years <= 12
+        ? rows.map((r, i) => i)
+        : Array.from(new Set([0, Math.floor((years - 1) / 2), years - 1]));
+      labelIdx.forEach(index => {
+        if (!rows[index]) return;
         const x = pad.left + index * (barWidth + gap) + barWidth / 2;
-        ctx.fillText(year + "年目", x, pad.top + height + 24);
+        ctx.fillText(labelOf(rows[index]), x, pad.top + height + 24);
       });
     }
 
@@ -1159,7 +1340,16 @@
         return;
       }
 
-      if (hit.withdraw) {
+      if (hit.withdraw && hit.row.age != null) {
+        tooltip.innerHTML = `
+          <strong>${hit.row.age}歳</strong>
+          <span><i style="background:var(--contrib)"></i>残高: ${yen.format(hit.row.balance)}</span>
+          <span><i style="background:var(--principal)"></i>生活費: ${yen.format(hit.row.living)}</span>
+          <span><i style="background:var(--green)"></i>年金: ${yen.format(hit.row.pension)}</span>
+          <span><i style="background:var(--interest)"></i>資産取り崩し: ${yen.format(hit.row.withdrawal)}</span>
+          ${hit.lower && hit.upper ? `<span><i style="background:var(--red)"></i>想定レンジ: ${yen.format(hit.lower.balance)}〜${yen.format(hit.upper.balance)}</span>` : ""}
+        `;
+      } else if (hit.withdraw) {
         tooltip.innerHTML = `
           <strong>${hit.row.year}年目</strong>
           <span><i style="background:var(--contrib)"></i>残高: ${yen.format(hit.row.balance)}</span>
@@ -1182,21 +1372,110 @@
     }
 
     function updateWithdraw() {
+      if (withdrawMethod === "amount") { updateWithdrawPension(); }
+      else { updateWithdrawRate(); }
+    }
+
+    function updateWithdrawPension() {
+      const baseRate = clampNumber(inputs.rate.value, 5);
+      const rateError = Math.max(0, clampNumber(inputs.rateError.value, 1));
+      const start = clampNumber(inputs.startAssets.value, 3000) * 10000;
+      const livingMonthly = clampNumber(inputs.withdrawAmount.value, 25) * 10000;
+      const inflationPct = Math.max(0, clampNumber(inputs.inflation.value, 0));
+      const pensionBaseYen = Math.max(0, clampNumber(inputs.pensionBase.value, 200)) * 10000;
+      const tax = inputs.tax.checked;
+      let startAge = Math.round(clampNumber(inputs.startAge.value, 65));
+      let endAge = Math.round(clampNumber(inputs.endAge.value, 95));
+      let pensionStartAge = Math.min(75, Math.max(60, Math.round(clampNumber(inputs.pensionStartAge.value, 65))));
+      if (endAge <= startAge) endAge = startAge + 1;
+
+      // スライダーの繰上げ/繰下げ表示
+      const factor = pensionFactor(pensionStartAge);
+      const pct = Math.round((factor - 1) * 1000) / 10;
+      const adjustText = pensionStartAge === 65 ? "基準（65歳）"
+        : pensionStartAge > 65 ? `繰下げ +${pct}%`
+        : `繰上げ ${pct}%`;
+      document.querySelector("#pensionAdjustHint").textContent = adjustText;
+      document.querySelector("#pensionStartAgeLabel").textContent = `${pensionStartAge}歳`;
+      document.querySelector("#pensionActualLabel").textContent = `受給額 ${yen.format(pensionBaseYen * factor)} / 年`;
+
+      const common = { start, livingMonthly, inflationPct, pensionBaseYen, pensionStartAge, startAge, endAge, tax };
+      const base = simulateWithdrawPension({ ...common, annualRate: baseRate });
+      const lower = rateError > 0 ? simulateWithdrawPension({ ...common, annualRate: baseRate - rateError }) : null;
+      const upper = rateError > 0 ? simulateWithdrawPension({ ...common, annualRate: baseRate + rateError }) : null;
+
+      const lowerRows = lower ? base.rows.map((r, i) => lower.rows[i] || { balance: 0 }) : null;
+      const upperRows = upper ? base.rows.map((r, i) => upper.rows[i] || { balance: r.balance }) : null;
+
+      const depleted = base.depletedAge !== null;
+      const lifespanLabel = document.querySelector("#lifespanLabel");
+      const lifespanValue = document.querySelector("#lifespanValue");
+      const lifespanSub = document.querySelector("#lifespanSub");
+
+      if (depleted) {
+        lifespanLabel.textContent = "資産寿命";
+        lifespanValue.textContent = `約${base.depletedAge}歳`;
+        lifespanSub.textContent = `この前提では${base.depletedAge}歳で資産が尽きます`;
+      } else {
+        lifespanLabel.textContent = `${endAge}歳時点の残高`;
+        lifespanValue.textContent = yen.format(base.endBalance);
+        lifespanSub.textContent = `この前提では${endAge}歳まで尽きません`;
+      }
+
+      document.querySelector("#headline").textContent = depleted
+        ? `資産は約${base.depletedAge}歳までもちます`
+        : `${endAge}歳まで資産は続きます`;
+      document.querySelector("#lead").textContent =
+        `毎月の生活費 ${yen.format(livingMonthly)}、年金 ${yen.format(base.pensionActual)}/年（${pensionStartAge}歳受給）。年金開始で資産の減りが緩やかになります。`;
+
+      document.querySelector("#chartTitle").textContent = "資産の残高推移（年齢別）";
+
+      document.querySelector("#wFinalTotal").textContent = yen.format(base.endBalance);
+      document.querySelector("#wStart").textContent = yen.format(start);
+      document.querySelector("#wTotalWithdrawn").textContent = yen.format(base.totalWithdrawn);
+      document.querySelector("#wTotalGrowth").textContent = yen.format(base.totalGrowth);
+      document.querySelector("#wEndBalance").textContent = yen.format(base.endBalance);
+
+      document.querySelector("#wRowsAmount").innerHTML = base.rows.map(r => `
+        <tr>
+          <td>${r.age}歳</td>
+          <td>${yen.format(r.living)}</td>
+          <td>${yen.format(r.pension)}</td>
+          <td>${yen.format(r.withdrawal)}</td>
+          <td>${yen.format(r.balance)}</td>
+        </tr>
+      `).join("");
+
+      // 繰上げ/繰下げ比較（60/65/70/75歳）
+      const compareAges = [60, 65, 70, 75];
+      document.querySelector("#compareGrid").innerHTML = compareAges.map(age => {
+        const sim = simulateWithdrawPension({ ...common, pensionStartAge: age, annualRate: baseRate });
+        const life = sim.depletedAge !== null ? `${sim.depletedAge}歳` : `${endAge}歳+`;
+        const sub = sim.depletedAge !== null ? "で尽きる" : "でも継続";
+        return `
+          <div class="compare-card ${age === pensionStartAge ? "is-base" : ""}">
+            <div class="c-age">${age}歳受給</div>
+            <div class="c-life">${life}</div>
+            <div class="c-sub">${sub}</div>
+          </div>`;
+      }).join("");
+
+      drawWithdrawChart(base.rows, lowerRows, upperRows, { ages: true, pensionStartAge });
+    }
+
+    function updateWithdrawRate() {
       const years = Math.min(60, Math.max(1, Math.round(clampNumber(inputs.withdrawYears.value, 30))));
       const baseRate = clampNumber(inputs.rate.value, 5);
       const rateError = Math.max(0, clampNumber(inputs.rateError.value, 1));
       const start = clampNumber(inputs.startAssets.value, 3000) * 10000;
-      const monthlyAmount = clampNumber(inputs.withdrawAmount.value, 10) * 10000;
       const withdrawRatePct = Math.max(0, clampNumber(inputs.withdrawRate.value, 4));
-      const inflationPct = Math.max(0, clampNumber(inputs.inflation.value, 0));
       const tax = inputs.tax.checked;
 
-      const common = { start, method: withdrawMethod, monthlyAmount, withdrawRatePct, years, inflationPct, tax };
+      const common = { start, method: "rate", monthlyAmount: 0, withdrawRatePct, years, inflationPct: 0, tax };
       const base = simulateWithdraw({ ...common, annualRate: baseRate });
       const lower = rateError > 0 ? simulateWithdraw({ ...common, annualRate: baseRate - rateError }) : null;
       const upper = rateError > 0 ? simulateWithdraw({ ...common, annualRate: baseRate + rateError }) : null;
 
-      // エラーバーは基本シナリオの年数に合わせる（尽きた年で打ち切る）
       const lowerRows = lower ? base.rows.map((r, i) => lower.rows[i] || { balance: 0 }) : null;
       const upperRows = upper ? base.rows.map((r, i) => upper.rows[i] || { balance: r.balance }) : null;
 
@@ -1218,9 +1497,8 @@
       document.querySelector("#headline").textContent = depleted
         ? `資産は約${base.depletedYear}年もちます`
         : `${years}年後も資産は続きます`;
-      document.querySelector("#lead").textContent = withdrawMethod === "amount"
-        ? `毎月 ${yen.format(monthlyAmount)} を取り崩した場合の残高推移です。利回り誤差はエラーバーで確認できます。`
-        : `毎年 残高の${withdrawRatePct}% を取り崩した場合の残高推移です。取り崩し額は残高に応じて変動します。`;
+      document.querySelector("#lead").textContent =
+        `毎年 残高の${withdrawRatePct}% を取り崩した場合の残高推移です。取り崩し額は残高に応じて変動します。`;
 
       document.querySelector("#chartTitle").textContent = "資産の残高推移";
 
@@ -1310,6 +1588,10 @@
           startAssets: inputs.startAssets.value,
           withdrawAmount: inputs.withdrawAmount.value,
           inflation: inputs.inflation.value,
+          startAge: inputs.startAge.value,
+          endAge: inputs.endAge.value,
+          pensionBase: inputs.pensionBase.value,
+          pensionStartAge: inputs.pensionStartAge.value,
           withdrawRate: inputs.withdrawRate.value,
           withdrawYears: inputs.withdrawYears.value,
           tax: inputs.tax.checked
@@ -1340,6 +1622,10 @@
         if (s.startAssets != null) inputs.startAssets.value = s.startAssets;
         if (s.withdrawAmount != null) inputs.withdrawAmount.value = s.withdrawAmount;
         if (s.inflation != null) inputs.inflation.value = s.inflation;
+        if (s.startAge != null) inputs.startAge.value = s.startAge;
+        if (s.endAge != null) inputs.endAge.value = s.endAge;
+        if (s.pensionBase != null) inputs.pensionBase.value = s.pensionBase;
+        if (s.pensionStartAge != null) inputs.pensionStartAge.value = s.pensionStartAge;
         if (s.withdrawRate != null) inputs.withdrawRate.value = s.withdrawRate;
         if (s.withdrawYears != null) inputs.withdrawYears.value = s.withdrawYears;
         if (s.tax != null) inputs.tax.checked = s.tax;
