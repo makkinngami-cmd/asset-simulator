@@ -1170,8 +1170,7 @@
         ctx.fillText(Math.round(value / 10000).toLocaleString("ja-JP") + "万", pad.left - 6, y);
       }
 
-      const gap = Math.min(12, Math.max(2, width / Math.max(1, years) * 0.18));
-      const barWidth = Math.max(5, (width - gap * (years - 1)) / years);
+      const { gap, barWidth } = calculateBarLayout(width, years);
 
       rows.forEach((r, index) => {
         const x = pad.left + index * (barWidth + gap);
@@ -1244,6 +1243,18 @@
       });
     }
 
+    // Keep every bar inside the available canvas width. On narrow screens with
+    // many years, scale the preferred bar and gap together instead of forcing
+    // a total width that overflows the canvas.
+    function calculateBarLayout(width, count) {
+      const safeCount = Math.max(1, count);
+      const preferredGap = Math.min(12, Math.max(2, width / safeCount * 0.18));
+      const preferredBarWidth = Math.max(5, (width - preferredGap * (safeCount - 1)) / safeCount);
+      const requiredWidth = preferredBarWidth * safeCount + preferredGap * (safeCount - 1);
+      const scale = requiredWidth > width ? width / requiredWidth : 1;
+      return { gap: preferredGap * scale, barWidth: preferredBarWidth * scale };
+    }
+
     function drawStackedBarChart(rows, goalValue, lowerRows, upperRows) {
       const dpr = window.devicePixelRatio || 1;
       const cssWidth = chart.clientWidth;
@@ -1283,8 +1294,7 @@
         ctx.fillText(Math.round(value / 10000).toLocaleString("ja-JP") + "万", pad.left - 6, y);
       }
 
-      const gap = Math.min(12, Math.max(2, width / rows.length * 0.18));
-      const barWidth = Math.max(5, (width - gap * (rows.length - 1)) / rows.length);
+      const { gap, barWidth } = calculateBarLayout(width, rows.length);
       const colors = ["#bdcff9", "#3975c5", "#073f98"];
 
       rows.forEach((r, index) => {
