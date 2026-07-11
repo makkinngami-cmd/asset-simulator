@@ -1206,7 +1206,11 @@
       }
 
       const useAge = opts && opts.ages;
-      const labelOf = (r) => useAge ? r.age + "歳" : r.year + "年目";
+      // The last pension row is the balance after the final year's processing,
+      // so label it with the configured end age rather than its period-start age.
+      const labelOf = (r, index) => useAge
+        ? (index === rows.length - 1 && opts.endAge != null ? opts.endAge : r.age) + "歳"
+        : r.year + "年目";
 
       // 年金開始の変曲点ライン
       if (opts && opts.pensionStartAge != null) {
@@ -1234,12 +1238,12 @@
       ctx.fillStyle = "#657085";
       ctx.font = "12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
       const labelIdx = years <= 12
-        ? rows.map((r, i) => i)
+        ? (width < 520 ? evenlySpacedIndexes(years, 5) : rows.map((r, i) => i))
         : Array.from(new Set([0, Math.floor((years - 1) / 2), years - 1]));
       labelIdx.forEach(index => {
         if (!rows[index]) return;
         const x = pad.left + index * (barWidth + gap) + barWidth / 2;
-        ctx.fillText(labelOf(rows[index]), x, pad.top + height + 24);
+        ctx.fillText(labelOf(rows[index], index), x, pad.top + height + 24);
       });
     }
 
@@ -1253,6 +1257,13 @@
       const requiredWidth = preferredBarWidth * safeCount + preferredGap * (safeCount - 1);
       const scale = requiredWidth > width ? width / requiredWidth : 1;
       return { gap: preferredGap * scale, barWidth: preferredBarWidth * scale };
+    }
+
+    function evenlySpacedIndexes(count, maxLabels) {
+      if (count <= maxLabels) return Array.from({ length: count }, (_, index) => index);
+      return Array.from({ length: maxLabels }, (_, index) =>
+        Math.round(index * (count - 1) / (maxLabels - 1))
+      );
     }
 
     function drawStackedBarChart(rows, goalValue, lowerRows, upperRows) {
@@ -1352,7 +1363,7 @@
       ctx.textAlign = "center";
       ctx.fillStyle = "#657085";
       const labelYears = years <= 12
-        ? rows.map(r => r.year)
+        ? (width < 520 ? evenlySpacedIndexes(years, 5).map(index => rows[index].year) : rows.map(r => r.year))
         : Array.from(new Set([1, Math.ceil(years / 2), years]));
       labelYears.forEach(year => {
         const index = year - 1;
@@ -1528,7 +1539,7 @@
           </div>`;
       }).join("");
 
-      drawWithdrawChart(base.rows, lowerRows, upperRows, { ages: true, pensionStartAge });
+      drawWithdrawChart(base.rows, lowerRows, upperRows, { ages: true, pensionStartAge, endAge });
     }
 
     function updateWithdrawRate() {
