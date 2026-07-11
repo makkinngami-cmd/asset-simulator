@@ -152,6 +152,28 @@
       font-weight: 700;
     }
 
+    .select-wrap {
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fff;
+      height: 44px;
+    }
+
+    .select-wrap select {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      outline: 0;
+      color: var(--ink);
+      background: transparent;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     .unit {
       color: var(--muted);
       white-space: nowrap;
@@ -457,6 +479,13 @@
       max-height: 310px;
     }
 
+    .scroll-hint {
+      display: none;
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
     table {
       width: 100%;
       min-width: 520px;
@@ -663,6 +692,10 @@
       .below-grid { grid-template-columns: 1fr; }
     }
 
+    @media (max-width: 680px) {
+      .scroll-hint { display: block; }
+    }
+
     @media (max-width: 620px) {
       .topbar { display: block; }
       .sidebar,
@@ -734,12 +767,12 @@
 
       <div class="field withdraw-only amount-only">
         <label for="startAge">取り崩し開始年齢 <span class="hint">リタイア年齢</span></label>
-        <div class="input-wrap"><input id="startAge" type="number" min="50" max="80" step="1" value="65"><span class="unit">歳</span></div>
+        <div class="select-wrap"><select id="startAge" data-min="50" data-max="80" data-step="1" data-unit="歳" data-default="65"></select></div>
       </div>
 
       <div class="field withdraw-only amount-only">
         <label for="endAge">何歳まで <span class="hint">想定寿命</span></label>
-        <div class="input-wrap"><input id="endAge" type="number" min="70" max="110" step="1" value="95"><span class="unit">歳</span></div>
+        <div class="select-wrap"><select id="endAge" data-min="70" data-max="110" data-step="1" data-unit="歳" data-default="95"></select></div>
       </div>
 
       <div class="field withdraw-only amount-only">
@@ -749,7 +782,7 @@
 
       <div class="field withdraw-only amount-only">
         <label for="inflation">インフレ率 <span class="hint">生活費を毎年増額</span></label>
-        <div class="input-wrap"><input id="inflation" type="number" min="0" max="10" step="0.1" value="0"><span class="unit">%</span></div>
+        <div class="select-wrap"><select id="inflation" data-min="0" data-max="10" data-step="0.5" data-unit="%" data-default="0"></select></div>
       </div>
 
       <div class="field withdraw-only amount-only">
@@ -765,27 +798,27 @@
 
       <div class="field withdraw-only rate-only">
         <label for="withdrawRate">毎年の取り崩し率 <span class="hint">残高に対する割合</span></label>
-        <div class="input-wrap"><input id="withdrawRate" type="number" min="0" max="20" step="0.1" value="4"><span class="unit">%</span></div>
+        <div class="select-wrap"><select id="withdrawRate" data-min="0" data-max="20" data-step="0.5" data-unit="%" data-default="4"></select></div>
       </div>
 
       <div class="field withdraw-only rate-only">
         <label for="withdrawYears">取り崩し期間 <span class="hint">最大60年で確認</span></label>
-        <div class="input-wrap"><input id="withdrawYears" type="number" min="1" max="60" step="1" value="30"><span class="unit">年</span></div>
+        <div class="select-wrap"><select id="withdrawYears" data-min="1" data-max="60" data-step="1" data-unit="年" data-default="30"></select></div>
       </div>
 
       <div class="field accumulate-only">
         <label for="years">運用期間 <span class="hint">1年から40年</span></label>
-        <div class="input-wrap"><input id="years" type="number" min="1" max="40" step="1" value="20"><span class="unit">年</span></div>
+        <div class="select-wrap"><select id="years" data-min="1" data-max="40" data-step="1" data-unit="年" data-default="20"></select></div>
       </div>
 
       <div class="field">
         <label for="rate">想定利回り <span class="hint">標準シナリオ</span></label>
-        <div class="input-wrap"><input id="rate" type="number" min="-20" max="20" step="0.1" value="5"><span class="unit">%</span></div>
+        <div class="select-wrap"><select id="rate" data-min="-20" data-max="20" data-step="0.5" data-unit="%" data-default="5"></select></div>
       </div>
 
       <div class="field">
         <label for="rateError">利回りの誤差 <span class="hint">エラーバー幅</span></label>
-        <div class="input-wrap"><input id="rateError" type="number" min="0" max="10" step="0.1" value="1"><span class="unit">%</span></div>
+        <div class="select-wrap"><select id="rateError" data-min="0" data-max="10" data-step="0.5" data-unit="%" data-default="1"></select></div>
       </div>
 
       <div class="switch-row">
@@ -862,6 +895,7 @@
 
         <div class="panel table-panel">
           <h3 id="tableTitle">年ごとの推移</h3>
+          <p class="scroll-hint">→ 横にスクロールできます</p>
           <div class="table-scroll">
             <table class="accumulate-only">
               <thead>
@@ -921,6 +955,27 @@
     function clampNumber(value, fallback) {
       const n = Number(value);
       return Number.isFinite(n) ? n : fallback;
+    }
+
+    function formatOptionValue(v) {
+      return Number.isInteger(v) ? String(v) : v.toFixed(1);
+    }
+
+    function populateNumericSelects() {
+      document.querySelectorAll("select[data-min]").forEach(select => {
+        const min = parseFloat(select.dataset.min);
+        const max = parseFloat(select.dataset.max);
+        const step = parseFloat(select.dataset.step);
+        const unit = select.dataset.unit || "";
+        const count = Math.round((max - min) / step);
+        const options = [];
+        for (let i = 0; i <= count; i++) {
+          const v = Math.round((min + i * step) * 1000) / 1000;
+          options.push(v);
+        }
+        select.innerHTML = options.map(v => `<option value="${v}">${formatOptionValue(v)}${unit}</option>`).join("");
+        if (select.dataset.default != null) select.value = select.dataset.default;
+      });
     }
 
     function monthlyNeeded(goal, years, annualRate, initial = 0) {
@@ -1079,6 +1134,7 @@
       const dpr = window.devicePixelRatio || 1;
       const cssWidth = chart.clientWidth;
       const cssHeight = chart.clientHeight;
+      if (cssWidth < 80 || cssHeight < 80) return;
       chart.width = Math.floor(cssWidth * dpr);
       chart.height = Math.floor(cssHeight * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1192,6 +1248,7 @@
       const dpr = window.devicePixelRatio || 1;
       const cssWidth = chart.clientWidth;
       const cssHeight = chart.clientHeight;
+      if (cssWidth < 80 || cssHeight < 80) return;
       chart.width = Math.floor(cssWidth * dpr);
       chart.height = Math.floor(cssHeight * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1298,6 +1355,7 @@
       const dpr = window.devicePixelRatio || 1;
       const cssWidth = pieChart.clientWidth;
       const cssHeight = pieChart.clientHeight;
+      if (cssWidth < 40 || cssHeight < 40) return;
       pieChart.width = Math.floor(cssWidth * dpr);
       pieChart.height = Math.floor(cssHeight * dpr);
       pieCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -1663,9 +1721,21 @@
     chart.addEventListener("mousemove", showTooltip);
     chart.addEventListener("mouseleave", () => { tooltip.style.opacity = "0"; });
     window.addEventListener("resize", update);
+
+    // 初回ロード時、レイアウト確定前（clientWidthが未確定）に描画されて
+    // グラフが潰れる/空になる問題への対策。サイズ確定後に再描画する。
+    if (typeof ResizeObserver !== "undefined") {
+      const resizeObserver = new ResizeObserver(() => update());
+      resizeObserver.observe(chart.parentElement);
+      resizeObserver.observe(pieChart.parentElement);
+    }
+    window.addEventListener("load", () => requestAnimationFrame(update));
+
+    populateNumericSelects();
     loadState();
     applyModeClasses();
     update();
+    requestAnimationFrame(update);
   </script>
 </body>
 </html>
