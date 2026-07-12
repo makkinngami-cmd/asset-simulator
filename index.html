@@ -782,12 +782,17 @@
 
       <div class="field withdraw-only amount-only">
         <label for="inflation">インフレ率 <span class="hint">生活費を毎年増額</span></label>
-        <div class="select-wrap"><select id="inflation" data-min="0" data-max="10" data-step="0.5" data-unit="%" data-default="0"></select></div>
+        <div class="select-wrap"><select id="inflation" data-min="0" data-max="10" data-step="0.5" data-unit="%" data-default="3"></select></div>
       </div>
 
       <div class="field withdraw-only amount-only">
         <label for="pensionBase">年金の基準額 <span class="hint">65歳開始の年額</span></label>
         <div class="input-wrap"><input id="pensionBase" type="number" min="0" step="10" value="200"><span class="unit">万円/年</span></div>
+      </div>
+
+      <div class="field withdraw-only amount-only">
+        <label for="pensionGrowth">年金の年額上昇率 <span class="hint">0%〜インフレ率（マクロ経済スライド考慮）</span></label>
+        <div class="select-wrap"><select id="pensionGrowth" data-min="0" data-max="10" data-step="0.5" data-unit="%" data-default="2"></select></div>
       </div>
 
       <div class="field withdraw-only amount-only">
@@ -826,7 +831,7 @@
         <label class="toggle"><input id="tax" type="checkbox" checked><i></i></label>
       </div>
 
-      <p class="note">本ツールは概算シミュレーションです。税金・インフレ・年金は簡易的に反映した概算です。年金は「65歳基準額×繰上げ/繰下げ率」で計算し、在職老齢年金・加給年金・夫婦合算・年金課税などは考慮していません。厳密な年金額は「ねんきんネット」でご確認ください。投資判断、税務判断、将来の受給額・運用成果を保証するものではありません。</p>
+      <p class="note">本ツールは概算シミュレーションです。税金・インフレ・年金は簡易的に反映した概算です。年金は「65歳基準額×繰上げ/繰下げ率」に入力した年額上昇率を毎年反映しますが、将来の物価・賃金・マクロ経済スライドや制度改正を予測するものではありません。在職老齢年金・加給年金・夫婦合算・年金課税などは考慮していません。厳密な年金額は「ねんきんネット」でご確認ください。投資判断、税務判断、将来の受給額・運用成果を保証するものではありません。</p>
     </aside>
 
     <section class="content">
@@ -938,6 +943,7 @@
       startAge: document.querySelector("#startAge"),
       endAge: document.querySelector("#endAge"),
       pensionBase: document.querySelector("#pensionBase"),
+      pensionGrowth: document.querySelector("#pensionGrowth"),
       pensionStartAge: document.querySelector("#pensionStartAge"),
       withdrawRate: document.querySelector("#withdrawRate"),
       withdrawYears: document.querySelector("#withdrawYears"),
@@ -976,6 +982,20 @@
         select.innerHTML = options.map(v => `<option value="${v}">${formatOptionValue(v)}${unit}</option>`).join("");
         if (select.dataset.default != null) select.value = select.dataset.default;
       });
+    }
+
+    function syncPensionGrowthOptions(inflationPct) {
+      const max = Math.max(0, Math.round(inflationPct * 2) / 2);
+      const select = inputs.pensionGrowth;
+      const selected = Math.min(max, Math.max(0, clampNumber(select.value, Math.min(2, max))));
+      if (select.dataset.inflationMax === String(max)) return;
+      const count = Math.round(max / 0.5);
+      select.innerHTML = Array.from({ length: count + 1 }, (_, index) => {
+        const value = index * 0.5;
+        return `<option value="${value}">${formatOptionValue(value)}%</option>`;
+      }).join("");
+      select.value = String(selected);
+      select.dataset.inflationMax = String(max);
     }
 
     function monthlyNeeded(goal, years, annualRate, initial = 0) {
@@ -1085,7 +1105,7 @@
       return 1 + months * perMonth;
     }
 
-    function simulateWithdrawPension({ start, livingMonthly, inflationPct, pensionBaseYen, pensionStartAge, startAge, endAge, annualRate, tax }) {
+    function simulateWithdrawPension({ start, livingMonthly, inflationPct, pensionBaseYen, pensionGrowthPct, pensionStartAge, startAge, endAge, annualRate, tax }) {
       const years = Math.max(0, endAge - startAge);
       const pensionActual = pensionBaseYen * pensionFactor(pensionStartAge);
       const rows = [];
@@ -1100,7 +1120,10 @@
         const startBal = balance;
         const infFactor = Math.pow(1 + inflationPct / 100, i);
         const living = livingMonthly * 12 * infFactor;
-        const pension = age >= pensionStartAge ? pensionActual : 0;
+        const pensionGrowthYears = Math.max(0, age - pensionStartAge);
+        const pension = age >= pensionStartAge
+          ? pensionActual * Math.pow(1 + pensionGrowthPct / 100, pensionGrowthYears)
+          : 0;
         const need = Math.max(0, living - pension);
         const actualWithdrawal = Math.min(need, startBal);
         const afterWithdraw = startBal - actualWithdrawal;
@@ -1461,7 +1484,9 @@
       const start = clampNumber(inputs.startAssets.value, 3000) * 10000;
       const livingMonthly = clampNumber(inputs.withdrawAmount.value, 25) * 10000;
       const inflationPct = Math.max(0, clampNumber(inputs.inflation.value, 0));
+      syncPensionGrowthOptions(inflationPct);
       const pensionBaseYen = Math.max(0, clampNumber(inputs.pensionBase.value, 200)) * 10000;
+      const pensionGrowthPct = Math.min(inflationPct, Math.max(0, clampNumber(inputs.pensionGrowth.value, Math.min(2, inflationPct))));
       const tax = inputs.tax.checked;
       let startAge = Math.round(clampNumber(inputs.startAge.value, 65));
       let endAge = Math.round(clampNumber(inputs.endAge.value, 95));
@@ -1476,9 +1501,9 @@
         : `繰上げ ${pct}%`;
       document.querySelector("#pensionAdjustHint").textContent = adjustText;
       document.querySelector("#pensionStartAgeLabel").textContent = `${pensionStartAge}歳`;
-      document.querySelector("#pensionActualLabel").textContent = `受給額 ${yen.format(pensionBaseYen * factor)} / 年`;
+      document.querySelector("#pensionActualLabel").textContent = `受給額 ${yen.format(pensionBaseYen * factor)} / 年（毎年 +${formatOptionValue(pensionGrowthPct)}%）`;
 
-      const common = { start, livingMonthly, inflationPct, pensionBaseYen, pensionStartAge, startAge, endAge, tax };
+      const common = { start, livingMonthly, inflationPct, pensionBaseYen, pensionGrowthPct, pensionStartAge, startAge, endAge, tax };
       const base = simulateWithdrawPension({ ...common, annualRate: baseRate });
       const lower = rateError > 0 ? simulateWithdrawPension({ ...common, annualRate: baseRate - rateError }) : null;
       const upper = rateError > 0 ? simulateWithdrawPension({ ...common, annualRate: baseRate + rateError }) : null;
@@ -1505,7 +1530,7 @@
         ? `資産は約${base.depletedAge}歳までもちます`
         : `${endAge}歳まで資産は続きます`;
       document.querySelector("#lead").textContent =
-        `毎月の生活費 ${yen.format(livingMonthly)}、年金 ${yen.format(base.pensionActual)}/年（${pensionStartAge}歳受給）。年金開始で資産の減りが緩やかになります。`;
+        `毎月の生活費 ${yen.format(livingMonthly)}、年金 ${yen.format(base.pensionActual)}/年（${pensionStartAge}歳受給・毎年${formatOptionValue(pensionGrowthPct)}%増）。年金開始で資産の減りが緩やかになります。`;
 
       document.querySelector("#chartTitle").textContent = "資産の残高推移（年齢別）";
 
@@ -1670,6 +1695,7 @@
           startAge: inputs.startAge.value,
           endAge: inputs.endAge.value,
           pensionBase: inputs.pensionBase.value,
+          pensionGrowth: inputs.pensionGrowth.value,
           pensionStartAge: inputs.pensionStartAge.value,
           withdrawRate: inputs.withdrawRate.value,
           withdrawYears: inputs.withdrawYears.value,
@@ -1704,6 +1730,7 @@
         if (s.startAge != null) inputs.startAge.value = s.startAge;
         if (s.endAge != null) inputs.endAge.value = s.endAge;
         if (s.pensionBase != null) inputs.pensionBase.value = s.pensionBase;
+        if (s.pensionGrowth != null) inputs.pensionGrowth.value = s.pensionGrowth;
         if (s.pensionStartAge != null) inputs.pensionStartAge.value = s.pensionStartAge;
         if (s.withdrawRate != null) inputs.withdrawRate.value = s.withdrawRate;
         if (s.withdrawYears != null) inputs.withdrawYears.value = s.withdrawYears;
