@@ -767,7 +767,7 @@
 
       <div class="field withdraw-only amount-only">
         <label for="startAge">取り崩し開始年齢 <span class="hint">リタイア年齢</span></label>
-        <div class="select-wrap"><select id="startAge" data-min="50" data-max="80" data-step="1" data-unit="歳" data-default="65"></select></div>
+        <div class="select-wrap"><select id="startAge" data-min="40" data-max="80" data-step="1" data-unit="歳" data-default="65"></select></div>
       </div>
 
       <div class="field withdraw-only amount-only">
@@ -818,7 +818,7 @@
 
       <div class="field">
         <label for="rate">想定利回り <span class="hint">標準シナリオ</span></label>
-        <div class="select-wrap"><select id="rate" data-min="-20" data-max="20" data-step="0.5" data-unit="%" data-default="5"></select></div>
+        <div class="select-wrap"><select id="rate" data-min="0" data-max="20" data-step="0.5" data-unit="%" data-default="5"></select></div>
       </div>
 
       <div class="field">
@@ -1479,7 +1479,7 @@
     }
 
     function updateWithdrawPension() {
-      const baseRate = clampNumber(inputs.rate.value, 5);
+      const baseRate = Math.max(0, clampNumber(inputs.rate.value, 5));
       const rateError = Math.max(0, clampNumber(inputs.rateError.value, 1));
       const start = clampNumber(inputs.startAssets.value, 3000) * 10000;
       const livingMonthly = clampNumber(inputs.withdrawAmount.value, 25) * 10000;
@@ -1505,7 +1505,7 @@
 
       const common = { start, livingMonthly, inflationPct, pensionBaseYen, pensionGrowthPct, pensionStartAge, startAge, endAge, tax };
       const base = simulateWithdrawPension({ ...common, annualRate: baseRate });
-      const lower = rateError > 0 ? simulateWithdrawPension({ ...common, annualRate: baseRate - rateError }) : null;
+      const lower = rateError > 0 ? simulateWithdrawPension({ ...common, annualRate: Math.max(0, baseRate - rateError) }) : null;
       const upper = rateError > 0 ? simulateWithdrawPension({ ...common, annualRate: baseRate + rateError }) : null;
 
       const lowerRows = lower ? base.rows.map((r, i) => lower.rows[i] || { balance: 0 }) : null;
@@ -1569,7 +1569,7 @@
 
     function updateWithdrawRate() {
       const years = Math.min(60, Math.max(1, Math.round(clampNumber(inputs.withdrawYears.value, 30))));
-      const baseRate = clampNumber(inputs.rate.value, 5);
+      const baseRate = Math.max(0, clampNumber(inputs.rate.value, 5));
       const rateError = Math.max(0, clampNumber(inputs.rateError.value, 1));
       const start = clampNumber(inputs.startAssets.value, 3000) * 10000;
       const withdrawRatePct = Math.max(0, clampNumber(inputs.withdrawRate.value, 4));
@@ -1577,7 +1577,7 @@
 
       const common = { start, method: "rate", monthlyAmount: 0, withdrawRatePct, years, inflationPct: 0, tax };
       const base = simulateWithdraw({ ...common, annualRate: baseRate });
-      const lower = rateError > 0 ? simulateWithdraw({ ...common, annualRate: baseRate - rateError }) : null;
+      const lower = rateError > 0 ? simulateWithdraw({ ...common, annualRate: Math.max(0, baseRate - rateError) }) : null;
       const upper = rateError > 0 ? simulateWithdraw({ ...common, annualRate: baseRate + rateError }) : null;
 
       const lowerRows = lower ? base.rows.map((r, i) => lower.rows[i] || { balance: 0 }) : null;
@@ -1627,7 +1627,7 @@
     function update() {
       if (mode === "withdraw") { updateWithdraw(); return; }
       const years = Math.min(40, Math.max(1, Math.round(clampNumber(inputs.years.value, 20))));
-      const baseRate = clampNumber(inputs.rate.value, 5);
+      const baseRate = Math.max(0, clampNumber(inputs.rate.value, 5));
       const rateError = Math.max(0, clampNumber(inputs.rateError.value, 1));
       let initial = clampNumber(inputs.initial.value, 100) * 10000;
       let monthly = clampNumber(inputs.monthly.value, 5) * 10000;
@@ -1640,7 +1640,7 @@
 
       const baseRows = simulate({ initial, monthly, years, annualRate: baseRate, tax: inputs.tax.checked });
       const lowerRows = rateError > 0
-        ? simulate({ initial, monthly, years, annualRate: baseRate - rateError, tax: inputs.tax.checked })
+        ? simulate({ initial, monthly, years, annualRate: Math.max(0, baseRate - rateError), tax: inputs.tax.checked })
         : null;
       const upperRows = rateError > 0
         ? simulate({ initial, monthly, years, annualRate: baseRate + rateError, tax: inputs.tax.checked })
@@ -1720,7 +1720,7 @@
         if (s.initial != null) inputs.initial.value = s.initial;
         if (s.monthly != null) inputs.monthly.value = s.monthly;
         if (s.years != null) inputs.years.value = s.years;
-        if (s.rate != null) inputs.rate.value = s.rate;
+        if (s.rate != null) inputs.rate.value = String(Math.max(0, clampNumber(s.rate, 5)));
         if (s.rateError != null) inputs.rateError.value = s.rateError;
         if (s.goal != null) inputs.goal.value = s.goal;
         if (s.goalInitial != null) inputs.goalInitial.value = s.goalInitial;
