@@ -3,6 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="icon" href="data:,">
   <title>資産形成シミュレーター</title>
   <style>
     :root {
@@ -589,6 +590,378 @@
       font-weight: 700;
     }
 
+    .pension-est-inline-note {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .pension-est-monthly {
+      margin: -2px 0 0;
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .pension-est-source-badge {
+      display: none;
+      width: fit-content;
+      padding: 3px 8px;
+      border-radius: 999px;
+      color: #0d6470;
+      background: #dff6f3;
+      font-size: 11px;
+      font-weight: 700;
+    }
+
+    body.pension-input-estimate .pension-est-source-badge { display: inline-flex; }
+
+    .pension-est-links {
+      display: grid;
+      gap: 8px;
+    }
+
+    .pension-est-link {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      min-height: 42px;
+      padding: 9px 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--blue);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .pension-est-rule-notice {
+      display: none;
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #76520c;
+      background: #fff6dd;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .pension-est-rule-notice.is-visible { display: block; }
+
+    .pension-est-birth-input {
+      width: 100%;
+      height: 44px;
+      padding: 0 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fff;
+      font-size: 16px;
+    }
+
+    .pension-estimator-view {
+      display: none;
+      min-height: 100vh;
+      padding: 28px 18px 48px;
+      background: #eef4f8;
+    }
+
+    body.pension-estimator-mode .app { display: none; }
+    body.pension-estimator-mode .pension-estimator-view { display: block; }
+
+    .pension-est-shell {
+      width: min(100%, 760px);
+      margin: 0 auto;
+    }
+
+    .pension-est-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .pension-est-back {
+      min-width: 44px;
+      min-height: 44px;
+      border: 1px solid var(--line);
+      border-radius: 50%;
+      color: var(--blue);
+      background: #fff;
+      cursor: pointer;
+      font-size: 22px;
+      line-height: 1;
+    }
+
+    .pension-est-header h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.3;
+    }
+
+    .pension-est-header p {
+      margin: 2px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pension-est-progress {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .pension-est-progress-item {
+      padding: 10px 6px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+    }
+
+    .pension-est-progress-item.is-active {
+      border-color: var(--blue);
+      color: var(--blue);
+      background: #eaf2fb;
+    }
+
+    .pension-est-panel {
+      padding: 22px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: var(--shadow);
+    }
+
+    .pension-est-step { display: none; }
+    body.pension-est-step-1 .pension-est-step[data-step="1"],
+    body.pension-est-step-2 .pension-est-step[data-step="2"],
+    body.pension-est-step-3 .pension-est-step[data-step="3"] { display: block; }
+
+    .pension-est-step h3 {
+      margin: 0 0 4px;
+      font-size: 20px;
+    }
+
+    .pension-est-step-lead {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .pension-est-common-slot .field { margin-bottom: 16px; }
+
+    .pension-est-form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .pension-est-form-field {
+      display: grid;
+      gap: 6px;
+    }
+
+    .pension-est-form-field[hidden] { display: none !important; }
+
+    .pension-est-form-field label {
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .pension-est-form-field input,
+    .pension-est-form-field select {
+      width: 100%;
+      height: 42px;
+      padding: 0 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--ink);
+      background: #fff;
+    }
+
+    .pension-est-cards {
+      display: grid;
+      gap: 12px;
+    }
+
+    .pension-est-card {
+      padding: 16px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--soft);
+    }
+
+    .pension-est-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .pension-est-card-head strong { font-size: 14px; }
+
+    .pension-est-remove {
+      min-width: 40px;
+      min-height: 40px;
+      border: 0;
+      border-radius: 8px;
+      color: var(--red);
+      background: #fff;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .pension-est-add,
+    .pension-est-secondary,
+    .pension-est-primary,
+    .pension-est-danger {
+      min-height: 44px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 700;
+    }
+
+    .pension-est-add,
+    .pension-est-secondary {
+      border: 1px solid var(--blue);
+      color: var(--blue);
+      background: #fff;
+    }
+
+    .pension-est-primary {
+      border: 0;
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+    }
+
+    .pension-est-danger {
+      border: 1px solid #efb8b8;
+      color: #aa3030;
+      background: #fff;
+    }
+
+    .pension-est-actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 20px;
+      flex-wrap: wrap;
+    }
+
+    .pension-est-actions-right {
+      display: flex;
+      gap: 10px;
+      margin-left: auto;
+      flex-wrap: wrap;
+    }
+
+    .pension-est-message {
+      display: none;
+      margin: 14px 0 0;
+      padding: 11px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .pension-est-message.is-error {
+      display: block;
+      color: #932b2b;
+      background: #fff0f0;
+    }
+
+    .pension-est-message.is-warning {
+      display: block;
+      color: #76520c;
+      background: #fff6dd;
+    }
+
+    .pension-est-result-hero {
+      padding: 20px;
+      border-radius: 10px;
+      color: #fff;
+      background: linear-gradient(135deg, var(--blue), var(--cyan));
+    }
+
+    .pension-est-result-hero span {
+      display: block;
+      font-size: 13px;
+      opacity: .9;
+    }
+
+    .pension-est-result-hero strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 34px;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pension-est-result-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .pension-est-result-card {
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+    }
+
+    .pension-est-result-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .pension-est-result-card strong {
+      display: block;
+      margin-top: 3px;
+      font-size: 18px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .pension-est-privacy {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .pension-est-privacy input { margin-top: 3px; }
+
+    .pension-est-details {
+      margin-top: 16px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      background: var(--soft);
+      font-size: 12px;
+    }
+
+    .pension-est-details summary {
+      color: var(--ink);
+      cursor: pointer;
+      font-weight: 700;
+    }
+
     .age-slider {
       width: 100%;
       margin: 2px 0;
@@ -710,6 +1083,17 @@
       .topbar p { font-size: 13px; }
       .compare-grid { grid-template-columns: 1fr 1fr; }
       .mode-tabs button { font-size: 12px; }
+      .pension-estimator-view { padding: 16px 12px 32px; }
+      .pension-est-panel { padding: 16px; }
+      .pension-est-header h2 { font-size: 20px; }
+      .pension-est-progress-item { font-size: 11px; padding: 8px 2px; }
+      .pension-est-form-grid,
+      .pension-est-result-grid { grid-template-columns: 1fr; }
+      .pension-est-actions,
+      .pension-est-actions-right { display: grid; width: 100%; }
+      .pension-est-actions-right { margin-left: 0; }
+      .pension-est-actions button,
+      .pension-est-actions a { width: 100%; text-align: center; }
     }
   </style>
 </head>
@@ -786,8 +1170,24 @@
       </div>
 
       <div class="field withdraw-only amount-only">
-        <label for="pensionBase">年金の基準額 <span class="hint">65歳開始の年額</span></label>
-        <div class="input-wrap"><input id="pensionBase" type="number" min="0" step="10" value="200"><span class="unit">万円/年</span></div>
+        <label>年金額の入力方法 <span class="hint">公式見込額か概算</span></label>
+        <div class="seg-toggle" aria-label="年金額の入力方法">
+          <button type="button" class="active" data-pension-input-mode="official">公式見込額を入力</button>
+          <button type="button" data-pension-input-mode="estimate">かんたん概算</button>
+        </div>
+      </div>
+
+      <div class="field withdraw-only amount-only">
+        <label for="pensionBase">年金の基準額 <span class="hint">65歳から受給する場合</span></label>
+        <div class="input-wrap"><input id="pensionBase" type="number" min="0" step="1" value="200" inputmode="decimal"><span class="unit">万円/年</span></div>
+        <p class="pension-est-monthly" id="pensionBaseMonthly">月額 約16.7万円</p>
+        <span class="pension-est-source-badge" id="pensionEstimateBadge">かんたん概算から反映</span>
+        <p class="pension-est-inline-note">65歳から受給する場合の見込年額を入力してください。令和8年度水準の、取り崩し開始時点の金額として扱います。</p>
+        <div class="pension-est-links">
+          <a class="pension-est-link" href="https://www.nenkin.go.jp/denshibenri_kojin/n_net/introduction/estimatedamount.html" target="_blank" rel="noopener noreferrer">ねんきんネットで確認 <span aria-hidden="true">↗</span></a>
+          <a class="pension-est-link" href="https://nenkin-shisan.mhlw.go.jp/" target="_blank" rel="noopener noreferrer">公的年金シミュレーターを開く <span aria-hidden="true">↗</span></a>
+        </div>
+        <p class="pension-est-inline-note">ねんきんネットでは、受給開始年齢を65歳に設定した見込額を入力してください。50歳未満の方の「ねんきん定期便」に記載された金額は、これまでの加入実績に基づく金額です。将来の加入を含む見込額は、ねんきんネットの「かんたん試算」またはこの画面の「かんたん概算」でご確認ください。</p>
       </div>
 
       <div class="field withdraw-only amount-only">
@@ -795,10 +1195,20 @@
         <div class="select-wrap"><select id="pensionGrowth" data-min="0" data-max="10" data-step="0.5" data-unit="%" data-default="2"></select></div>
       </div>
 
-      <div class="field withdraw-only amount-only">
-        <label for="pensionStartAge">年金の受給開始年齢 <span class="hint" id="pensionAdjustHint">基準（65歳）</span></label>
-        <input id="pensionStartAge" class="age-slider" type="range" min="60" max="75" step="1" value="65">
-        <div class="slider-readout"><span id="pensionStartAgeLabel">65歳</span><span id="pensionActualLabel">受給額 ¥0 / 年</span></div>
+      <div id="pensionCommonSidebarSlot" class="withdraw-only amount-only">
+        <div id="pensionCommonSettings">
+          <div class="field">
+            <label for="pensionBirthDate">生年月日 <span class="hint">任意・制度判定用</span></label>
+            <input id="pensionBirthDate" class="pension-est-birth-input" type="date" autocomplete="bday">
+            <p class="pension-est-inline-note">繰上げ減額率と繰下げ上限の判定にのみ使用します。かんたん概算では加入期間の年月計算に必要です。</p>
+          </div>
+          <div class="field">
+            <label for="pensionStartAge">年金の受給開始年齢 <span class="hint" id="pensionAdjustHint">基準（65歳）</span></label>
+            <input id="pensionStartAge" class="age-slider" type="range" min="60" max="75" step="1" value="65">
+            <div class="slider-readout"><span id="pensionStartAgeLabel">65歳</span><span id="pensionActualLabel">受給額 ¥0 / 年</span></div>
+            <div class="pension-est-rule-notice" id="pensionRuleNotice" role="status"></div>
+          </div>
+        </div>
       </div>
 
       <div class="field withdraw-only rate-only">
@@ -831,7 +1241,7 @@
         <label class="toggle"><input id="tax" type="checkbox" checked><i></i></label>
       </div>
 
-      <p class="note">本ツールは概算シミュレーションです。税金・インフレ・年金は簡易的に反映した概算です。年金は「65歳基準額×繰上げ/繰下げ率」に入力した年額上昇率を毎年反映しますが、将来の物価・賃金・マクロ経済スライドや制度改正を予測するものではありません。在職老齢年金・加給年金・夫婦合算・年金課税などは考慮していません。厳密な年金額は「ねんきんネット」でご確認ください。投資判断、税務判断、将来の受給額・運用成果を保証するものではありません。</p>
+      <p class="note">本ツールは概算シミュレーションです。税金・インフレ・年金は簡易的に反映した概算です。年金は「65歳基準額×繰上げ/繰下げ率」に、取り崩し開始年齢を起点として入力した年額上昇率を反映しますが、将来の物価・賃金・マクロ経済スライドや制度改正を予測するものではありません。在職老齢年金・加給年金・夫婦合算・年金課税などは考慮していません。厳密な年金額は「ねんきんネット」でご確認ください。投資判断、税務判断、将来の受給額・運用成果を保証するものではありません。</p>
     </aside>
 
     <section class="content">
@@ -926,8 +1336,93 @@
     </section>
   </main>
 
+  <section class="pension-estimator-view" id="pensionEstimatorView" aria-labelledby="pensionEstimatorTitle">
+    <div class="pension-est-shell">
+      <header class="pension-est-header">
+        <button class="pension-est-back" id="pensionEstimatorBack" type="button" aria-label="取り崩し画面に戻る">‹</button>
+        <div>
+          <h2 id="pensionEstimatorTitle" tabindex="-1">年金額を概算</h2>
+          <p>入力内容はブラウザ内だけで計算し、外部へ送信しません。</p>
+        </div>
+      </header>
+
+      <div class="pension-est-progress" aria-label="概算の進行状況">
+        <div class="pension-est-progress-item is-active" data-pension-progress="1">1 基本情報</div>
+        <div class="pension-est-progress-item" data-pension-progress="2">2 働き方・年収</div>
+        <div class="pension-est-progress-item" data-pension-progress="3">3 結果</div>
+      </div>
+
+      <div class="pension-est-panel">
+        <section class="pension-est-step" data-step="1" aria-labelledby="pensionEstStep1Title">
+          <h3 id="pensionEstStep1Title" tabindex="-1">基本情報</h3>
+          <p class="pension-est-step-lead">生年月日と受給開始年齢を確認し、働く予定の年齢を入力してください。</p>
+          <div id="pensionEstimatorCommonSlot" class="pension-est-common-slot"></div>
+          <div class="pension-est-form-field">
+            <label for="pensionEstWorkEndAge">今後の働き方を何歳まで続けるか</label>
+            <select id="pensionEstWorkEndAge">
+              <option value="55">55歳</option>
+              <option value="60" selected>60歳</option>
+              <option value="65">65歳</option>
+              <option value="70">70歳</option>
+              <option value="75">75歳</option>
+            </select>
+          </div>
+          <div class="pension-est-message" id="pensionEstStep1Message" role="alert"></div>
+          <label class="pension-est-privacy"><input id="pensionEstSaveOptIn" type="checkbox">この端末に生年月日・職歴・年収の入力内容を保存する</label>
+          <p class="pension-est-inline-note">保存はこのブラウザのローカルストレージだけに行います。共有端末では保存しないでください。</p>
+          <div class="pension-est-actions">
+            <button class="pension-est-danger" id="pensionEstClear" type="button">概算入力を消去</button>
+            <div class="pension-est-actions-right"><button class="pension-est-primary" id="pensionEstToStep2" type="button">働き方・年収へ</button></div>
+          </div>
+        </section>
+
+        <section class="pension-est-step" data-step="2" aria-labelledby="pensionEstStep2Title">
+          <h3 id="pensionEstStep2Title" tabindex="-1">働き方・加入期間</h3>
+          <p class="pension-est-step-lead">年齢区間は「開始年齢以上、終了年齢未満」です。空白期間は概算に含めません。</p>
+          <div class="pension-est-cards" id="pensionEstCards"></div>
+          <button class="pension-est-add" id="pensionEstAddCard" type="button">＋ 働き方を追加</button>
+          <p class="pension-est-inline-note">期間の平均年収は、現在の賃金水準に換算した概算を入力してください。過去の給与を現在の水準へ再評価する計算は行いません。賞与は年収の15％を年1回受け取るものとして簡易換算します。</p>
+          <div class="pension-est-message" id="pensionEstStep2Message" role="alert"></div>
+          <div class="pension-est-actions">
+            <button class="pension-est-secondary" id="pensionEstBackToStep1" type="button">基本情報へ戻る</button>
+            <div class="pension-est-actions-right"><button class="pension-est-primary" id="pensionEstCalculate" type="button">概算結果を見る</button></div>
+          </div>
+        </section>
+
+        <section class="pension-est-step" data-step="3" aria-labelledby="pensionEstStep3Title">
+          <h3 id="pensionEstStep3Title" tabindex="-1">概算結果</h3>
+          <p class="pension-est-step-lead">令和8年度水準の概算額です。将来の名目額は、取り崩し画面で設定した年金上昇率で試算します。</p>
+          <div class="pension-est-result-hero">
+            <span>65歳から受給する場合の基準年額</span>
+            <strong id="pensionEstBaseAnnual">¥0</strong>
+            <span id="pensionEstBaseMonthly">月額 ¥0</span>
+          </div>
+          <div class="pension-est-result-grid">
+            <div class="pension-est-result-card"><span id="pensionEstAdjustedLabel">65歳受給時の見込額</span><strong id="pensionEstAdjustedAnnual">¥0 / 年</strong></div>
+            <div class="pension-est-result-card"><span>受給開始後の月額換算</span><strong id="pensionEstAdjustedMonthly">¥0 / 月</strong></div>
+            <div class="pension-est-result-card"><span>老齢基礎年金部分</span><strong id="pensionEstBasicAnnual">¥0 / 年</strong></div>
+            <div class="pension-est-result-card"><span>老齢厚生年金部分</span><strong id="pensionEstEmployeesAnnual">¥0 / 年</strong></div>
+          </div>
+          <div class="pension-est-message" id="pensionEstResultWarning" role="status"></div>
+          <details class="pension-est-details">
+            <summary>概算の対象外・注意事項</summary>
+            <p>入力した加入期間と平均年収に基づく簡易概算です。実際の年金記録、報酬再評価、各種加算・支給停止、制度改正は反映しません。免除・猶予・第3号、20歳未満の厚生年金加入期間、60歳以降の国民年金任意加入、加給年金、振替加算、在職老齢年金は非対応です。70歳以降の就労期間は厚生年金の概算に含めません。標準報酬は令和8年度の等級表を全期間へ一律適用し、実際の給与・賞与配分とは異なる簡易換算です。正確な見込額はねんきんネットでご確認ください。</p>
+          </details>
+          <div class="pension-est-actions">
+            <button class="pension-est-secondary" id="pensionEstEdit" type="button">条件を修正</button>
+            <div class="pension-est-actions-right">
+              <a class="pension-est-secondary" href="https://www.nenkin.go.jp/denshibenri_kojin/n_net/introduction/estimatedamount.html" target="_blank" rel="noopener noreferrer">ねんきんネットで確認</a>
+              <button class="pension-est-primary" id="pensionEstApply" type="button">取り崩しに反映</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </section>
+
   <script>
     const STORAGE_KEY = "asset-sim-v1";
+    const PENSION_EST_STORAGE_KEY = "asset-sim-pension-estimate-v1";
     const yen = new Intl.NumberFormat("ja-JP", { style: "currency", currency: "JPY", maximumFractionDigits: 0 });
     const inputs = {
       initial: document.querySelector("#initial"),
@@ -957,6 +1452,7 @@
     let barHitAreas = [];
     let mode = "normal";
     let withdrawMethod = "amount";
+    let pensionInputMode = "official";
 
     function clampNumber(value, fallback) {
       const n = Number(value);
@@ -1097,17 +1593,57 @@
       return { rows, depletedYear, totalWithdrawn, totalGrowth, endBalance: Math.max(0, balance) };
     }
 
-    // 公的年金の繰上げ/繰下げ係数（65歳=1.0）
-    // 繰下げ: 1ヶ月 +0.7%（最大75歳 +84%）／繰上げ: 1ヶ月 -0.4%（最大60歳 -24%）
-    function pensionFactor(pensionStartAge) {
+    function birthDateOnOrBefore(value, cutoff) {
+      if (!value) return false;
+      const normalized = String(value).slice(0, 10);
+      return /^\d{4}-\d{2}-\d{2}$/.test(normalized) && normalized <= cutoff;
+    }
+
+    function getPensionBirthDate() {
+      return document.querySelector("#pensionBirthDate")?.value || "";
+    }
+
+    function pensionClaimMaxAge(birthDateValue) {
+      return birthDateOnOrBefore(birthDateValue, "1952-04-01") ? 70 : 75;
+    }
+
+    // 公的年金の繰上げ/繰下げ係数（65歳=1.0）。
+    // 繰上げは生年月日で月0.5%/0.4%を判定し、補正はここで1回だけ行う。
+    function pensionFactor(pensionStartAge, birthDateValue = "") {
       const months = Math.round((pensionStartAge - 65) * 12);
-      const perMonth = months >= 0 ? 0.007 : 0.004;
+      const earlyRate = birthDateOnOrBefore(birthDateValue, "1962-04-01") ? 0.005 : 0.004;
+      const perMonth = months >= 0 ? 0.007 : earlyRate;
       return 1 + months * perMonth;
     }
 
-    function simulateWithdrawPension({ start, livingMonthly, inflationPct, pensionBaseYen, pensionGrowthPct, pensionStartAge, startAge, endAge, annualRate, tax }) {
+    function syncPensionRuleUI() {
+      const slider = inputs.pensionStartAge;
+      const birthDateValue = getPensionBirthDate();
+      const maxAge = pensionClaimMaxAge(birthDateValue);
+      const notice = document.querySelector("#pensionRuleNotice");
+      const originalSelectedAge = Math.round(clampNumber(slider.value, 65));
+      slider.max = String(maxAge);
+      let selectedAge = Math.min(maxAge, originalSelectedAge);
+      let message = "";
+      if (originalSelectedAge > maxAge) {
+        selectedAge = maxAge;
+        slider.value = String(maxAge);
+        message = `生年月日に基づく繰下げ上限が原則${maxAge}歳のため、受給開始年齢を${maxAge}歳に補正しました。受給権発生日による例外はねんきんネットでご確認ください。`;
+      } else if (!birthDateValue && selectedAge !== 65) {
+        message = "生年月日が未入力のため、繰上げ減額率は1か月あたり0.4％で計算しています。1962年4月1日以前生まれの方は0.5％です。";
+      } else if (birthDateOnOrBefore(birthDateValue, "1962-04-01") && selectedAge < 65) {
+        message = "生年月日に基づき、繰上げ減額率を1か月あたり0.5％で計算しています。";
+      } else if (maxAge === 70) {
+        message = "生年月日に基づき、繰下げ受給の上限を原則70歳として計算しています。受給権発生日による例外はねんきんネットでご確認ください。";
+      }
+      notice.textContent = message;
+      notice.classList.toggle("is-visible", Boolean(message));
+      return { birthDateValue, maxAge, selectedAge };
+    }
+
+    function simulateWithdrawPension({ start, livingMonthly, inflationPct, pensionBaseYen, pensionGrowthPct, pensionStartAge, pensionBirthDate, startAge, endAge, annualRate, tax }) {
       const years = Math.max(0, endAge - startAge);
-      const pensionActual = pensionBaseYen * pensionFactor(pensionStartAge);
+      const pensionActual = pensionBaseYen * pensionFactor(pensionStartAge, pensionBirthDate);
       const rows = [];
       let balance = start;
       let depletedAge = null;
@@ -1120,7 +1656,7 @@
         const startBal = balance;
         const infFactor = Math.pow(1 + inflationPct / 100, i);
         const living = livingMonthly * 12 * infFactor;
-        const pensionGrowthYears = Math.max(0, age - pensionStartAge);
+        const pensionGrowthYears = i;
         const pension = age >= pensionStartAge
           ? pensionActual * Math.pow(1 + pensionGrowthPct / 100, pensionGrowthYears)
           : 0;
@@ -1485,25 +2021,28 @@
       const livingMonthly = clampNumber(inputs.withdrawAmount.value, 25) * 10000;
       const inflationPct = Math.max(0, clampNumber(inputs.inflation.value, 0));
       syncPensionGrowthOptions(inflationPct);
-      const pensionBaseYen = Math.max(0, clampNumber(inputs.pensionBase.value, 200)) * 10000;
+      // pensionBaseAt65: 65歳受給を基準にした、取り崩し開始時点水準の年額。
+      const pensionBaseAt65 = Math.max(0, clampNumber(inputs.pensionBase.value, 200)) * 10000;
       const pensionGrowthPct = Math.min(inflationPct, Math.max(0, clampNumber(inputs.pensionGrowth.value, Math.min(2, inflationPct))));
       const tax = inputs.tax.checked;
       let startAge = Math.round(clampNumber(inputs.startAge.value, 65));
       let endAge = Math.round(clampNumber(inputs.endAge.value, 95));
-      let pensionStartAge = Math.min(75, Math.max(60, Math.round(clampNumber(inputs.pensionStartAge.value, 65))));
+      const pensionRule = syncPensionRuleUI();
+      let pensionStartAge = Math.min(pensionRule.maxAge, Math.max(60, pensionRule.selectedAge));
       if (endAge <= startAge) endAge = startAge + 1;
 
       // スライダーの繰上げ/繰下げ表示
-      const factor = pensionFactor(pensionStartAge);
+      const factor = pensionFactor(pensionStartAge, pensionRule.birthDateValue);
       const pct = Math.round((factor - 1) * 1000) / 10;
       const adjustText = pensionStartAge === 65 ? "基準（65歳）"
         : pensionStartAge > 65 ? `繰下げ +${pct}%`
         : `繰上げ ${pct}%`;
       document.querySelector("#pensionAdjustHint").textContent = adjustText;
       document.querySelector("#pensionStartAgeLabel").textContent = `${pensionStartAge}歳`;
-      document.querySelector("#pensionActualLabel").textContent = `受給額 ${yen.format(pensionBaseYen * factor)} / 年（毎年 +${formatOptionValue(pensionGrowthPct)}%）`;
+      document.querySelector("#pensionActualLabel").textContent = `開始時点水準 ${yen.format(pensionBaseAt65 * factor)} / 年`;
+      document.querySelector("#pensionBaseMonthly").textContent = `月額 約${formatOptionValue(Math.round((pensionBaseAt65 / 12 / 10000) * 10) / 10)}万円`;
 
-      const common = { start, livingMonthly, inflationPct, pensionBaseYen, pensionGrowthPct, pensionStartAge, startAge, endAge, tax };
+      const common = { start, livingMonthly, inflationPct, pensionBaseYen: pensionBaseAt65, pensionGrowthPct, pensionStartAge, pensionBirthDate: pensionRule.birthDateValue, startAge, endAge, tax };
       const base = simulateWithdrawPension({ ...common, annualRate: baseRate });
       const lower = rateError > 0 ? simulateWithdrawPension({ ...common, annualRate: Math.max(0, baseRate - rateError) }) : null;
       const upper = rateError > 0 ? simulateWithdrawPension({ ...common, annualRate: baseRate + rateError }) : null;
@@ -1530,7 +2069,7 @@
         ? `資産は約${base.depletedAge}歳までもちます`
         : `${endAge}歳まで資産は続きます`;
       document.querySelector("#lead").textContent =
-        `毎月の生活費 ${yen.format(livingMonthly)}、年金 ${yen.format(base.pensionActual)}/年（${pensionStartAge}歳受給・毎年${formatOptionValue(pensionGrowthPct)}%増）。年金開始で資産の減りが緩やかになります。`;
+        `毎月の生活費 ${yen.format(livingMonthly)}、65歳基準年金 ${yen.format(pensionBaseAt65)}/年（${pensionStartAge}歳受給・開始年齢から毎年${formatOptionValue(pensionGrowthPct)}%増）。令和8年度水準の開始時点金額から試算します。`;
 
       document.querySelector("#chartTitle").textContent = "資産の残高推移（年齢別）";
 
@@ -1551,7 +2090,7 @@
       `).join("");
 
       // 繰上げ/繰下げ比較（60/65/70/75歳）
-      const compareAges = [60, 65, 70, 75];
+      const compareAges = [60, 65, 70, 75].filter(age => age <= pensionRule.maxAge);
       document.querySelector("#compareGrid").innerHTML = compareAges.map(age => {
         const sim = simulateWithdrawPension({ ...common, pensionStartAge: age, annualRate: baseRate });
         const life = sim.depletedAge !== null ? `${sim.depletedAge}歳` : `${endAge}歳+`;
@@ -1677,11 +2216,525 @@
       ]);
     }
 
+    const PensionEstimator = (() => {
+      // 令和8年度（2026年度）の年金額・標準報酬月額等級表。
+      // 基礎年金: https://www.nenkin.go.jp/service/pamphlet/kyufu.files/LK03.pdf
+      // 等級表: https://www.nenkin.go.jp/service/kounen/hokenryo/ryogaku/ryogakuhyo/20200825.files/R08ryougaku.pdf
+      // 報酬比例乗率: https://www.nenkin.go.jp/service/yougo/hagyo/hoshuhirei.html
+      const RULES = Object.freeze({
+        fiscalYear: 2026,
+        basicFullAnnual: 847300,
+        basicFullAnnualOlder: 844900,
+        basicOlderCutoff: "1956-04-01",
+        preApril2003Rate: 7.125 / 1000,
+        postApril2003Rate: 5.481 / 1000,
+        maxAnnualIncome: 15000000,
+        bonusRatio: 0.15,
+        maxStandardBonus: 1500000,
+        maxCards: 3,
+        maxBasicMonths: 480
+      });
+
+      const STANDARD_MONTHLY_GRADES = Object.freeze([
+        [93000, 88000], [101000, 98000], [107000, 104000], [114000, 110000],
+        [122000, 118000], [130000, 126000], [138000, 134000], [146000, 142000],
+        [155000, 150000], [165000, 160000], [175000, 170000], [185000, 180000],
+        [195000, 190000], [210000, 200000], [230000, 220000], [250000, 240000],
+        [270000, 260000], [290000, 280000], [310000, 300000], [330000, 320000],
+        [350000, 340000], [370000, 360000], [395000, 380000], [425000, 410000],
+        [455000, 440000], [485000, 470000], [515000, 500000], [545000, 530000],
+        [575000, 560000], [605000, 590000], [635000, 620000], [Infinity, 650000]
+      ]);
+
+      let state = createInitialState();
+      let dom = {};
+      let initialized = false;
+
+      function createInitialState() {
+        return {
+          version: 1,
+          step: 1,
+          workEndAge: 60,
+          nextCardId: 2,
+          cards: [{ id: 1, type: "employees", startAge: 20, endAge: 60, averageAnnualIncomeMan: "" }],
+          result: null,
+          warnings: []
+        };
+      }
+
+      function standardMonthlyRemuneration(monthlySalary) {
+        const salary = Math.max(0, Number(monthlySalary) || 0);
+        if (salary === 0) return 0;
+        return STANDARD_MONTHLY_GRADES.find(([upper]) => salary < upper)?.[1] || 650000;
+      }
+
+      function monthIndexFromBirthAge(birthDateValue, age) {
+        const [year, month] = birthDateValue.split("-").map(Number);
+        return year * 12 + (month - 1) + Math.round(age * 12);
+      }
+
+      function monthsByApril2003(birthDateValue, startAge, endAge) {
+        const start = monthIndexFromBirthAge(birthDateValue, startAge);
+        const end = monthIndexFromBirthAge(birthDateValue, endAge);
+        const boundary = 2003 * 12 + 3;
+        const preMonths = Math.max(0, Math.min(end, boundary) - start);
+        const postMonths = Math.max(0, end - Math.max(start, boundary));
+        return { preMonths, postMonths };
+      }
+
+      function overlapMonths(startAge, endAge, rangeStart, rangeEnd) {
+        return Math.max(0, Math.min(endAge, rangeEnd) - Math.max(startAge, rangeStart)) * 12;
+      }
+
+      function calculateBasicPension({ birthDateValue, cards }) {
+        const qualifyingMonths = cards.reduce((sum, card) => sum + overlapMonths(card.startAge, card.endAge, 20, 60), 0);
+        const creditedMonths = Math.min(RULES.maxBasicMonths, qualifyingMonths);
+        const fullAnnual = birthDateOnOrBefore(birthDateValue, RULES.basicOlderCutoff)
+          ? RULES.basicFullAnnualOlder
+          : RULES.basicFullAnnual;
+        return {
+          annual: fullAnnual * creditedMonths / RULES.maxBasicMonths,
+          creditedMonths,
+          qualifyingMonths,
+          fullAnnual
+        };
+      }
+
+      function calculateEmployeesPension({ birthDateValue, cards }) {
+        let preAnnual = 0;
+        let postAnnual = 0;
+        let preMonths = 0;
+        let postMonths = 0;
+
+        cards.filter(card => card.type === "employees").forEach(card => {
+          const insuredStartAge = Math.min(70, Math.max(20, card.startAge));
+          const insuredEndAge = Math.min(70, Math.max(20, card.endAge));
+          if (insuredEndAge <= insuredStartAge) return;
+          const annualIncome = Math.min(RULES.maxAnnualIncome, Math.max(0, Number(card.averageAnnualIncomeMan) * 10000 || 0));
+          const monthlySalary = annualIncome * (1 - RULES.bonusRatio) / 12;
+          const standardMonthly = standardMonthlyRemuneration(monthlySalary);
+          const standardBonus = Math.min(
+            RULES.maxStandardBonus,
+            Math.floor((annualIncome * RULES.bonusRatio) / 1000) * 1000
+          );
+          const split = monthsByApril2003(birthDateValue, insuredStartAge, insuredEndAge);
+          preMonths += split.preMonths;
+          postMonths += split.postMonths;
+          preAnnual += standardMonthly * split.preMonths * RULES.preApril2003Rate;
+          const postAverageStandardMonthly = standardMonthly + standardBonus / 12;
+          postAnnual += postAverageStandardMonthly * split.postMonths * RULES.postApril2003Rate;
+        });
+
+        return { annual: preAnnual + postAnnual, preAnnual, postAnnual, preMonths, postMonths };
+      }
+
+      function calculateClaimAgeAdjustment({ pensionBaseAt65, claimAge, birthDateValue }) {
+        const factor = pensionFactor(claimAge, birthDateValue);
+        return { factor, pensionAdjustedAtClaimAge: pensionBaseAt65 * factor };
+      }
+
+      function calculateEstimatedPension({ birthDateValue, cards, claimAge }) {
+        const basic = calculateBasicPension({ birthDateValue, cards });
+        const employees = calculateEmployeesPension({ birthDateValue, cards });
+        const pensionBaseAt65 = basic.annual + employees.annual;
+        const adjustment = calculateClaimAgeAdjustment({ pensionBaseAt65, claimAge, birthDateValue });
+        return { pensionBaseAt65, basic, employees, ...adjustment };
+      }
+
+      function currentAge(birthDateValue) {
+        const birth = new Date(`${birthDateValue}T00:00:00`);
+        if (Number.isNaN(birth.getTime())) return null;
+        const today = new Date();
+        let age = today.getFullYear() - birth.getFullYear();
+        const beforeBirthday = today.getMonth() < birth.getMonth()
+          || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate());
+        if (beforeBirthday) age--;
+        return age;
+      }
+
+      function setPensionInputMode(nextMode) {
+        pensionInputMode = nextMode === "estimate" ? "estimate" : "official";
+        document.querySelectorAll("[data-pension-input-mode]").forEach(button => {
+          button.classList.toggle("active", button.dataset.pensionInputMode === pensionInputMode);
+        });
+        applyModeClasses();
+      }
+
+      function moveCommonSettings(toEstimator) {
+        const settings = document.querySelector("#pensionCommonSettings");
+        const target = toEstimator ? dom.commonSlot : document.querySelector("#pensionCommonSidebarSlot");
+        if (settings && target && settings.parentElement !== target) target.appendChild(settings);
+      }
+
+      function setStep(step) {
+        state.step = Math.min(3, Math.max(1, step));
+        [1, 2, 3].forEach(value => {
+          document.body.classList.toggle(`pension-est-step-${value}`, state.step === value);
+        });
+        dom.progress.forEach(item => item.classList.toggle("is-active", Number(item.dataset.pensionProgress) === state.step));
+        const heading = document.querySelector(`#pensionEstStep${state.step}Title`);
+        requestAnimationFrame(() => {
+          heading?.focus({ preventScroll: true });
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+        savePersistentState();
+      }
+
+      function openEstimator({ pushHistory = true } = {}) {
+        if (mode !== "withdraw") {
+          mode = "withdraw";
+          document.querySelectorAll("[data-mode]").forEach(button => button.classList.toggle("active", button.dataset.mode === mode));
+        }
+        withdrawMethod = "amount";
+        document.querySelectorAll("[data-method]").forEach(button => button.classList.toggle("active", button.dataset.method === withdrawMethod));
+        setPensionInputMode("estimate");
+        moveCommonSettings(true);
+        document.body.classList.add("pension-estimator-mode");
+        if (pushHistory && !history.state?.pensionEstimator) {
+          history.pushState({ pensionEstimator: true }, "", location.href);
+        }
+        setStep(state.step || 1);
+        saveState();
+      }
+
+      function closeEstimator({ fromPopState = false } = {}) {
+        if (!fromPopState && history.state?.pensionEstimator) {
+          history.back();
+          return;
+        }
+        document.body.classList.remove("pension-estimator-mode");
+        moveCommonSettings(false);
+        requestAnimationFrame(() => {
+          document.querySelector('[data-pension-input-mode="estimate"]')?.focus();
+          document.querySelector('[data-pension-input-mode="estimate"]')?.scrollIntoView({ block: "center" });
+          update();
+        });
+      }
+
+      function showMessage(element, type, textValue) {
+        element.textContent = textValue || "";
+        element.className = "pension-est-message";
+        if (textValue) element.classList.add(type === "error" ? "is-error" : "is-warning");
+      }
+
+      function validateStep1() {
+        const birthDateValue = document.querySelector("#pensionBirthDate").value;
+        const age = currentAge(birthDateValue);
+        if (!birthDateValue || age === null || age < 0 || age > 100) {
+          showMessage(dom.step1Message, "error", "かんたん概算では、有効な生年月日の入力が必要です。");
+          return false;
+        }
+        state.workEndAge = Number(dom.workEndAge.value);
+        showMessage(dom.step1Message, "warning", "");
+        return true;
+      }
+
+      function validateCards() {
+        const errors = [];
+        const warnings = [];
+        const sorted = [...state.cards].sort((a, b) => a.startAge - b.startAge || a.endAge - b.endAge);
+        sorted.forEach((card, index) => {
+          if (!Number.isFinite(card.startAge) || !Number.isFinite(card.endAge) || card.startAge < 20 || card.endAge > 75 || card.startAge >= card.endAge) {
+            errors.push(`働き方${index + 1}の開始・終了年齢を確認してください。`);
+          }
+          if (card.endAge > state.workEndAge) errors.push(`働き方${index + 1}の終了年齢が、働く予定の${state.workEndAge}歳を超えています。`);
+          if (card.type === "employees" && String(card.averageAnnualIncomeMan).trim() === "") {
+            errors.push(`働き方${index + 1}の平均年収を入力してください（0万円の場合は0と入力）。`);
+          }
+          const income = Number(card.averageAnnualIncomeMan);
+          if (card.type === "employees" && (!Number.isFinite(income) || income < 0 || income > 1500)) {
+            errors.push(`働き方${index + 1}の平均年収は0〜1,500万円で入力してください。`);
+          }
+          if (card.type === "national" && card.endAge > 60) {
+            warnings.push(`働き方${index + 1}の60歳以降の国民年金任意加入は初期版の概算に含めません。`);
+          }
+          if (card.type === "employees" && card.endAge > 70) {
+            warnings.push(`働き方${index + 1}の70歳以降の就労期間は厚生年金の概算に含めません。`);
+          }
+          if (index > 0) {
+            const previous = sorted[index - 1];
+            if (card.startAge < previous.endAge) errors.push(`働き方${index}と${index + 1}の期間が重複しています。`);
+            if (card.startAge > previous.endAge) warnings.push(`${previous.endAge}歳から${card.startAge}歳までの空白期間は概算に含めません。`);
+          }
+        });
+        if (sorted.length && sorted[0].startAge > 20) warnings.push(`20歳から${sorted[0].startAge}歳までの空白期間は概算に含めません。`);
+        if (sorted.length && sorted[sorted.length - 1].endAge < state.workEndAge) {
+          warnings.push(`${sorted[sorted.length - 1].endAge}歳から${state.workEndAge}歳までの空白期間は概算に含めません。`);
+        }
+        const qualifyingMonths = sorted.reduce((sum, card) => {
+          const upperAge = card.type === "employees" ? 70 : 60;
+          return sum + overlapMonths(card.startAge, card.endAge, 20, upperAge);
+        }, 0);
+        if (qualifyingMonths < 120) errors.push("入力された加入期間が120月未満のため、老齢年金の受給資格期間を満たしません。");
+        return { valid: errors.length === 0, errors, warnings, sorted };
+      }
+
+      function renderCards() {
+        dom.cards.innerHTML = state.cards.map((card, index) => `
+          <article class="pension-est-card" data-card-id="${card.id}">
+            <div class="pension-est-card-head">
+              <strong>働き方 ${index + 1}</strong>
+              <button class="pension-est-remove" type="button" data-remove-card="${card.id}" ${state.cards.length === 1 ? "disabled" : ""}>削除</button>
+            </div>
+            <div class="pension-est-form-grid">
+              <div class="pension-est-form-field">
+                <label for="pensionEstType${card.id}">加入制度</label>
+                <select id="pensionEstType${card.id}" data-card-field="type">
+                  <option value="employees" ${card.type === "employees" ? "selected" : ""}>会社員・公務員（厚生年金）</option>
+                  <option value="national" ${card.type === "national" ? "selected" : ""}>国民年金</option>
+                </select>
+              </div>
+              <div class="pension-est-form-field">
+                <label for="pensionEstStart${card.id}">開始年齢</label>
+                <input id="pensionEstStart${card.id}" data-card-field="startAge" type="number" min="20" max="74" step="1" inputmode="numeric" value="${card.startAge}">
+              </div>
+              <div class="pension-est-form-field">
+                <label for="pensionEstEnd${card.id}">終了年齢（この年齢未満）</label>
+                <input id="pensionEstEnd${card.id}" data-card-field="endAge" type="number" min="21" max="75" step="1" inputmode="numeric" value="${card.endAge}">
+              </div>
+              <div class="pension-est-form-field" ${card.type === "employees" ? "" : "hidden"}>
+                <label for="pensionEstIncome${card.id}">期間の平均年収（現在水準）</label>
+                <input id="pensionEstIncome${card.id}" data-card-field="averageAnnualIncomeMan" type="number" min="0" max="1500" step="10" inputmode="decimal" value="${card.averageAnnualIncomeMan}" placeholder="例：500">
+                <span class="pension-est-inline-note">万円/年</span>
+              </div>
+            </div>
+          </article>
+        `).join("");
+        dom.addCard.disabled = state.cards.length >= RULES.maxCards;
+        dom.addCard.textContent = state.cards.length >= RULES.maxCards ? "働き方は最大3件です" : "＋ 働き方を追加";
+      }
+
+      function addCard() {
+        if (state.cards.length >= RULES.maxCards) return;
+        const lastCard = [...state.cards].sort((a, b) => b.endAge - a.endAge)[0];
+        let startAge = Number(lastCard.endAge) || 20;
+        if (startAge >= state.workEndAge && lastCard.endAge - lastCard.startAge > 1) {
+          startAge = Math.max(lastCard.startAge + 1, state.workEndAge - 5);
+          lastCard.endAge = startAge;
+        }
+        const endAge = Math.min(75, Math.max(startAge + 1, state.workEndAge));
+        state.cards.push({
+          id: state.nextCardId++,
+          type: "national",
+          startAge,
+          endAge,
+          averageAnnualIncomeMan: ""
+        });
+        renderCards();
+        savePersistentState();
+      }
+
+      function calculateAndShow() {
+        const validation = validateCards();
+        if (!validation.valid) {
+          showMessage(dom.step2Message, "error", validation.errors.join(" "));
+          return;
+        }
+        showMessage(dom.step2Message, validation.warnings.length ? "warning" : "", validation.warnings.join(" "));
+        state.warnings = validation.warnings;
+        const birthDateValue = document.querySelector("#pensionBirthDate").value;
+        const claimAge = Number(inputs.pensionStartAge.value);
+        state.result = calculateEstimatedPension({ birthDateValue, cards: validation.sorted, claimAge });
+        renderResult(claimAge);
+        setStep(3);
+      }
+
+      function renderResult(claimAge) {
+        const result = state.result;
+        if (!result) return;
+        dom.baseAnnual.textContent = yen.format(Math.round(result.pensionBaseAt65));
+        dom.baseMonthly.textContent = `月額 ${yen.format(Math.round(result.pensionBaseAt65 / 12))}`;
+        dom.adjustedLabel.textContent = `${claimAge}歳受給時の見込額（開始時点水準）`;
+        dom.adjustedAnnual.textContent = `${yen.format(Math.round(result.pensionAdjustedAtClaimAge))} / 年`;
+        dom.adjustedMonthly.textContent = `${yen.format(Math.round(result.pensionAdjustedAtClaimAge / 12))} / 月`;
+        dom.basicAnnual.textContent = `${yen.format(Math.round(result.basic.annual))} / 年`;
+        dom.employeesAnnual.textContent = `${yen.format(Math.round(result.employees.annual))} / 年`;
+        const warningParts = [...state.warnings];
+        if (result.basic.qualifyingMonths > RULES.maxBasicMonths) warningParts.push("老齢基礎年金の算入月数は480月を上限にしています。");
+        warningParts.push("免除・猶予・第3号など未入力の期間は概算に含まれません。");
+        showMessage(dom.resultWarning, "warning", warningParts.join(" "));
+      }
+
+      function applyResult() {
+        if (!state.result) return;
+        inputs.pensionBase.value = String(Math.round(state.result.pensionBaseAt65) / 10000);
+        setPensionInputMode("estimate");
+        saveState();
+        update();
+        savePersistentState();
+        closeEstimator();
+      }
+
+      function serializePersistentState() {
+        return {
+          version: 1,
+          birthDate: document.querySelector("#pensionBirthDate").value,
+          workEndAge: state.workEndAge,
+          nextCardId: state.nextCardId,
+          cards: state.cards.map(card => ({ ...card }))
+        };
+      }
+
+      function savePersistentState() {
+        if (!initialized || !dom.saveOptIn?.checked) return;
+        try { localStorage.setItem(PENSION_EST_STORAGE_KEY, JSON.stringify(serializePersistentState())); } catch {}
+      }
+
+      function loadPersistentState() {
+        try {
+          const raw = localStorage.getItem(PENSION_EST_STORAGE_KEY);
+          if (!raw) return;
+          const saved = JSON.parse(raw);
+          if (saved.version !== 1 || !Array.isArray(saved.cards)) return;
+          dom.saveOptIn.checked = true;
+          document.querySelector("#pensionBirthDate").value = saved.birthDate || "";
+          state.workEndAge = Math.min(75, Math.max(55, Number(saved.workEndAge) || 60));
+          dom.workEndAge.value = String(state.workEndAge);
+          state.cards = saved.cards.slice(0, RULES.maxCards).map((card, index) => ({
+            id: Number(card.id) || index + 1,
+            type: card.type === "national" ? "national" : "employees",
+            startAge: Number(card.startAge),
+            endAge: Number(card.endAge),
+            averageAnnualIncomeMan: card.averageAnnualIncomeMan ?? ""
+          }));
+          if (!state.cards.length) state.cards = createInitialState().cards;
+          state.nextCardId = Math.max(Number(saved.nextCardId) || 1, ...state.cards.map(card => card.id)) + 1;
+        } catch {}
+      }
+
+      function clearEstimatorInputs() {
+        if (!window.confirm("生年月日・職歴・年収の概算入力を消去しますか？")) return;
+        state = createInitialState();
+        document.querySelector("#pensionBirthDate").value = "";
+        inputs.pensionStartAge.max = "75";
+        inputs.pensionStartAge.value = "65";
+        dom.workEndAge.value = "60";
+        dom.saveOptIn.checked = false;
+        try { localStorage.removeItem(PENSION_EST_STORAGE_KEY); } catch {}
+        renderCards();
+        syncPensionRuleUI();
+        showMessage(dom.step1Message, "warning", "概算入力を消去しました。");
+        update();
+        saveState();
+      }
+
+      function bindEvents() {
+        document.querySelectorAll("[data-pension-input-mode]").forEach(button => {
+          button.addEventListener("click", () => {
+            if (button.dataset.pensionInputMode === "estimate") openEstimator();
+            else {
+              setPensionInputMode("official");
+              saveState();
+            }
+          });
+        });
+        dom.back.addEventListener("click", () => closeEstimator());
+        dom.toStep2.addEventListener("click", () => {
+          if (!validateStep1()) return;
+          const first = state.cards[0];
+          if (state.cards.length === 1 && first.endAge === 60) first.endAge = state.workEndAge;
+          renderCards();
+          setStep(2);
+        });
+        dom.backToStep1.addEventListener("click", () => setStep(1));
+        dom.edit.addEventListener("click", () => setStep(2));
+        dom.calculate.addEventListener("click", calculateAndShow);
+        dom.apply.addEventListener("click", applyResult);
+        dom.addCard.addEventListener("click", addCard);
+        dom.clear.addEventListener("click", clearEstimatorInputs);
+        dom.workEndAge.addEventListener("change", () => {
+          state.workEndAge = Number(dom.workEndAge.value);
+          savePersistentState();
+        });
+        dom.saveOptIn.addEventListener("change", () => {
+          if (dom.saveOptIn.checked) savePersistentState();
+          else { try { localStorage.removeItem(PENSION_EST_STORAGE_KEY); } catch {} }
+        });
+        dom.cards.addEventListener("input", event => {
+          const cardElement = event.target.closest("[data-card-id]");
+          const field = event.target.dataset.cardField;
+          if (!cardElement || !field) return;
+          const card = state.cards.find(item => item.id === Number(cardElement.dataset.cardId));
+          if (!card) return;
+          card[field] = field === "type" || field === "averageAnnualIncomeMan" ? event.target.value : Number(event.target.value);
+          if (field === "type") renderCards();
+          savePersistentState();
+        });
+        dom.cards.addEventListener("click", event => {
+          const button = event.target.closest("[data-remove-card]");
+          if (!button || state.cards.length <= 1) return;
+          state.cards = state.cards.filter(card => card.id !== Number(button.dataset.removeCard));
+          renderCards();
+          savePersistentState();
+        });
+        document.querySelector("#pensionBirthDate").addEventListener("input", () => {
+          savePersistentState();
+          update();
+          saveState();
+        });
+        inputs.pensionBase.addEventListener("input", () => {
+          setPensionInputMode("official");
+          saveState();
+        });
+        window.addEventListener("popstate", () => {
+          if (document.body.classList.contains("pension-estimator-mode")) closeEstimator({ fromPopState: true });
+        });
+      }
+
+      function init() {
+        if (initialized) return;
+        dom = {
+          commonSlot: document.querySelector("#pensionEstimatorCommonSlot"),
+          progress: [...document.querySelectorAll("[data-pension-progress]")],
+          back: document.querySelector("#pensionEstimatorBack"),
+          workEndAge: document.querySelector("#pensionEstWorkEndAge"),
+          saveOptIn: document.querySelector("#pensionEstSaveOptIn"),
+          clear: document.querySelector("#pensionEstClear"),
+          toStep2: document.querySelector("#pensionEstToStep2"),
+          backToStep1: document.querySelector("#pensionEstBackToStep1"),
+          cards: document.querySelector("#pensionEstCards"),
+          addCard: document.querySelector("#pensionEstAddCard"),
+          calculate: document.querySelector("#pensionEstCalculate"),
+          edit: document.querySelector("#pensionEstEdit"),
+          apply: document.querySelector("#pensionEstApply"),
+          step1Message: document.querySelector("#pensionEstStep1Message"),
+          step2Message: document.querySelector("#pensionEstStep2Message"),
+          resultWarning: document.querySelector("#pensionEstResultWarning"),
+          baseAnnual: document.querySelector("#pensionEstBaseAnnual"),
+          baseMonthly: document.querySelector("#pensionEstBaseMonthly"),
+          adjustedLabel: document.querySelector("#pensionEstAdjustedLabel"),
+          adjustedAnnual: document.querySelector("#pensionEstAdjustedAnnual"),
+          adjustedMonthly: document.querySelector("#pensionEstAdjustedMonthly"),
+          basicAnnual: document.querySelector("#pensionEstBasicAnnual"),
+          employeesAnnual: document.querySelector("#pensionEstEmployeesAnnual")
+        };
+        initialized = true;
+        loadPersistentState();
+        renderCards();
+        bindEvents();
+        setPensionInputMode(pensionInputMode);
+        syncPensionRuleUI();
+        saveState();
+        if (history.state?.pensionEstimator) openEstimator({ pushHistory: false });
+      }
+
+      return {
+        init,
+        calculateBasicPension,
+        calculateEmployeesPension,
+        calculateClaimAgeAdjustment,
+        calculateEstimatedPension,
+        standardMonthlyRemuneration,
+        monthsByApril2003
+      };
+    })();
+
     function saveState() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify({
           mode,
           withdrawMethod,
+          pensionInputMode,
           initial: inputs.initial.value,
           monthly: inputs.monthly.value,
           years: inputs.years.value,
@@ -1717,6 +2770,9 @@
           withdrawMethod = s.withdrawMethod;
           document.querySelectorAll("[data-method]").forEach(b => b.classList.toggle("active", b.dataset.method === withdrawMethod));
         }
+        if (s.pensionInputMode === "estimate" || s.pensionInputMode === "official") {
+          pensionInputMode = s.pensionInputMode;
+        }
         if (s.initial != null) inputs.initial.value = s.initial;
         if (s.monthly != null) inputs.monthly.value = s.monthly;
         if (s.years != null) inputs.years.value = s.years;
@@ -1743,6 +2799,7 @@
       document.body.classList.toggle("withdraw-mode", mode === "withdraw");
       document.body.classList.toggle("method-amount", withdrawMethod === "amount");
       document.body.classList.toggle("method-rate", withdrawMethod === "rate");
+      document.body.classList.toggle("pension-input-estimate", pensionInputMode === "estimate");
     }
 
     document.querySelectorAll("[data-mode]").forEach(button => {
@@ -1781,6 +2838,7 @@
 
     populateNumericSelects();
     loadState();
+    PensionEstimator.init();
     applyModeClasses();
     update();
     requestAnimationFrame(update);
