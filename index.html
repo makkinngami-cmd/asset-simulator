@@ -618,7 +618,7 @@
 
     body.pension-input-estimate .pension-est-source-badge { display: inline-flex; }
     body.pension-input-estimate .pension-est-official-only,
-    body.pension-input-estimate #pensionCommonSidebarSlot { display: none; }
+    body.pension-input-estimate #pensionCommonSidebarSlot .pension-est-birth-field { display: none; }
 
     .pension-est-links {
       display: grid;
@@ -1166,6 +1166,16 @@
         <div class="input-wrap"><input id="withdrawAmount" type="number" min="0" step="1" value="25"><span class="unit">万円</span></div>
       </div>
 
+      <div class="field">
+        <label for="rate">想定利回り <span class="hint">標準シナリオ</span></label>
+        <div class="select-wrap"><select id="rate" data-min="0" data-max="20" data-step="0.5" data-unit="%" data-default="5"></select></div>
+      </div>
+
+      <div class="field">
+        <label for="rateError">利回りの誤差 <span class="hint">エラーバー幅</span></label>
+        <div class="select-wrap"><select id="rateError" data-min="0" data-max="10" data-step="0.5" data-unit="%" data-default="1"></select></div>
+      </div>
+
       <div class="field withdraw-only amount-only">
         <label for="inflation">インフレ率 <span class="hint">生活費を毎年増額</span></label>
         <div class="select-wrap"><select id="inflation" data-min="0" data-max="10" data-step="0.5" data-unit="%" data-default="3"></select></div>
@@ -1199,7 +1209,7 @@
 
       <div id="pensionCommonSidebarSlot" class="withdraw-only amount-only">
         <div id="pensionCommonSettings">
-          <div class="field">
+          <div class="field pension-est-birth-field">
             <label for="pensionBirthDate">生年月日 <span class="hint">任意・制度判定用</span></label>
             <input id="pensionBirthDate" class="pension-est-birth-input" type="date" autocomplete="bday">
             <p class="pension-est-inline-note">繰上げ減額率と繰下げ上限の判定にのみ使用します。かんたん概算では加入期間の年月計算に必要です。</p>
@@ -1226,16 +1236,6 @@
       <div class="field accumulate-only">
         <label for="years">運用期間 <span class="hint">1年から40年</span></label>
         <div class="select-wrap"><select id="years" data-min="1" data-max="40" data-step="1" data-unit="年" data-default="20"></select></div>
-      </div>
-
-      <div class="field">
-        <label for="rate">想定利回り <span class="hint">標準シナリオ</span></label>
-        <div class="select-wrap"><select id="rate" data-min="0" data-max="20" data-step="0.5" data-unit="%" data-default="5"></select></div>
-      </div>
-
-      <div class="field">
-        <label for="rateError">利回りの誤差 <span class="hint">エラーバー幅</span></label>
-        <div class="select-wrap"><select id="rateError" data-min="0" data-max="10" data-step="0.5" data-unit="%" data-default="1"></select></div>
       </div>
 
       <div class="switch-row">
