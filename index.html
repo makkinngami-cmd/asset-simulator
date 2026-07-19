@@ -617,6 +617,8 @@
     }
 
     body.pension-input-estimate .pension-est-source-badge { display: inline-flex; }
+    body.pension-input-estimate .pension-est-official-only,
+    body.pension-input-estimate #pensionCommonSidebarSlot { display: none; }
 
     .pension-est-links {
       display: grid;
@@ -1172,8 +1174,8 @@
       <div class="field withdraw-only amount-only">
         <label>年金額の入力方法 <span class="hint">公式見込額か概算</span></label>
         <div class="seg-toggle" aria-label="年金額の入力方法">
-          <button type="button" class="active" data-pension-input-mode="official">公式見込額を入力</button>
-          <button type="button" data-pension-input-mode="estimate">かんたん概算</button>
+          <button type="button" class="active" data-pension-input-mode="estimate">かんたん概算</button>
+          <button type="button" data-pension-input-mode="official">公式見込額を入力</button>
         </div>
       </div>
 
@@ -1182,12 +1184,12 @@
         <div class="input-wrap"><input id="pensionBase" type="number" min="0" step="1" value="200" inputmode="decimal"><span class="unit">万円/年</span></div>
         <p class="pension-est-monthly" id="pensionBaseMonthly">月額 約16.7万円</p>
         <span class="pension-est-source-badge" id="pensionEstimateBadge">かんたん概算から反映</span>
-        <p class="pension-est-inline-note">65歳から受給する場合の見込年額を入力してください。令和8年度水準の、取り崩し開始時点の金額として扱います。</p>
-        <div class="pension-est-links">
+        <p class="pension-est-inline-note pension-est-official-only">65歳から受給する場合の見込年額を入力してください。令和8年度水準の、取り崩し開始時点の金額として扱います。</p>
+        <div class="pension-est-links pension-est-official-only">
           <a class="pension-est-link" href="https://www.nenkin.go.jp/denshibenri_kojin/n_net/introduction/estimatedamount.html" target="_blank" rel="noopener noreferrer">ねんきんネットで確認 <span aria-hidden="true">↗</span></a>
           <a class="pension-est-link" href="https://nenkin-shisan.mhlw.go.jp/" target="_blank" rel="noopener noreferrer">公的年金シミュレーターを開く <span aria-hidden="true">↗</span></a>
         </div>
-        <p class="pension-est-inline-note">ねんきんネットでは、受給開始年齢を65歳に設定した見込額を入力してください。50歳未満の方の「ねんきん定期便」に記載された金額は、これまでの加入実績に基づく金額です。将来の加入を含む見込額は、ねんきんネットの「かんたん試算」またはこの画面の「かんたん概算」でご確認ください。</p>
+        <p class="pension-est-inline-note pension-est-official-only">ねんきんネットでは、受給開始年齢を65歳に設定した見込額を入力してください。50歳未満の方の「ねんきん定期便」に記載された金額は、これまでの加入実績に基づく金額です。将来の加入を含む見込額は、ねんきんネットの「かんたん試算」またはこの画面の「かんたん概算」でご確認ください。</p>
       </div>
 
       <div class="field withdraw-only amount-only">
@@ -1355,11 +1357,14 @@
       <div class="pension-est-panel">
         <section class="pension-est-step" data-step="1" aria-labelledby="pensionEstStep1Title">
           <h3 id="pensionEstStep1Title" tabindex="-1">基本情報</h3>
-          <p class="pension-est-step-lead">生年月日と受給開始年齢を確認し、働く予定の年齢を入力してください。</p>
+            <p class="pension-est-step-lead">生年月日と受給開始年齢を確認し、働く予定の年齢を入力してください。入力した生年月日は概算画面内だけで管理します。</p>
           <div id="pensionEstimatorCommonSlot" class="pension-est-common-slot"></div>
           <div class="pension-est-form-field">
             <label for="pensionEstWorkEndAge">今後の働き方を何歳まで続けるか</label>
             <select id="pensionEstWorkEndAge">
+              <option value="40">40歳</option>
+              <option value="45">45歳</option>
+              <option value="50">50歳</option>
               <option value="55">55歳</option>
               <option value="60" selected>60歳</option>
               <option value="65">65歳</option>
@@ -1452,7 +1457,7 @@
     let barHitAreas = [];
     let mode = "normal";
     let withdrawMethod = "amount";
-    let pensionInputMode = "official";
+    let pensionInputMode = "estimate";
 
     function clampNumber(value, fallback) {
       const n = Number(value);
@@ -2588,7 +2593,7 @@
           if (saved.version !== 1 || !Array.isArray(saved.cards)) return;
           dom.saveOptIn.checked = true;
           document.querySelector("#pensionBirthDate").value = saved.birthDate || "";
-          state.workEndAge = Math.min(75, Math.max(55, Number(saved.workEndAge) || 60));
+          state.workEndAge = Math.min(75, Math.max(40, Number(saved.workEndAge) || 60));
           dom.workEndAge.value = String(state.workEndAge);
           state.cards = saved.cards.slice(0, RULES.maxCards).map((card, index) => ({
             id: Number(card.id) || index + 1,
